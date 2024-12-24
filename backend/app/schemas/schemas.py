@@ -9,6 +9,13 @@ class Lead(BaseModel):
     class config:
         from_attributes = True
 
+class LeadCreate(Lead):
+    pass
+
+class LeadList(Lead):
+    created_at: datetime
+    
+
 class POC(BaseModel):
     lead_id: int
     name: str
@@ -17,8 +24,7 @@ class POC(BaseModel):
     phone_number: int
     class config:
         from_attributes = True
-    # class Config:
-    #     orm_mode = True
+
 
 class CallBase(BaseModel):
     lead_id: int
@@ -37,6 +43,6 @@ class CallUpdateFrequency(BaseModel):
 
 class CallToday(BaseModel):
     lead_id: int
-    next_call_date: datetime
+    lead_name: str
 
 

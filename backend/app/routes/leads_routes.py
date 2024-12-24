@@ -5,9 +5,9 @@ from fastapi import APIRouter, Depends, HTTPException, Request, status
 from fastapi.responses import JSONResponse, RedirectResponse
 from sqlalchemy.orm import Session
 
-from ..models.postgres_models import LeadModel, PointOfContactModel
+from ..models.postgres_models import LeadModel, PointOfContactModel, CallModel
 from ..configs.database.postgres_db import get_postgres_db
-from ..schemas.schemas import Lead, POC
+from ..schemas.schemas import Lead, POC, CallCreate, CallUpdateFrequency, CallToday
 
 
 
@@ -35,3 +35,14 @@ async def add_poc(lead_id: int, poc: POC, db: Session = Depends(get_postgres_db)
     db.commit()
     db.refresh(db_poc)
     return db_poc
+
+@router.post('/{lead_id}/call', response_model=CallCreate)
+async def add_call(lead_id: int, call: CallCreate, db: Session = Depends(get_postgres_db)):
+    db_lead = db.query(LeadModel).filter(LeadModel.id == lead_id).first()
+    if not db_lead:
+        raise HTTPException(status_code=404, detail="Lead not found")
+    db_call = CallModel(frequency=call.frequency, last_call_date=None, lead_id=lead_id)
+    db.add(db_call)
+    db.commit()
+    db.refresh(db_call)
+    return db_call

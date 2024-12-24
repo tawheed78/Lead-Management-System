@@ -7,6 +7,7 @@ class LeadModel(Base):
     __tablename__ = "leads"
     id = Column(Integer, primary_key=True, index=True)
     name = Column(String, nullable=False)
+
     status = Column(String, default='new')
     created_at = Column(DateTime, default=datetime.now())
 
@@ -33,7 +34,7 @@ class CallModel(Base):
     id = Column(Integer, primary_key=True, index=True)
     lead_id = Column(Integer, ForeignKey("leads.id"))
     frequency = Column(Integer)
-    last_call_date = Column(DateTime)
+    last_call_date = Column(DateTime, default=None, nullable=True)
 
     # Relationships
     lead = relationship("LeadModel", back_populates="calls")

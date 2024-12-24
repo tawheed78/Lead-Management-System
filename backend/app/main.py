@@ -2,6 +2,8 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 #from .configs.database.postgres_db import Base, engine, create_database_if_not_exists
 from .routes.leads_routes import router as lead_router
+from .routes.call_tracking_routes import router as call_tracking_router
+from .routes.interaction_tracking_routes import router as interaction_tracking_router
 
 app = FastAPI()
 
@@ -16,6 +18,8 @@ app = FastAPI()
 # )
 
 app.include_router(lead_router, prefix="/api/lead", tags=["Lead Operations"])
+app.include_router(call_tracking_router, prefix="/api", tags=["Call Tracking Operations"])
+app.include_router(interaction_tracking_router, prefix="/api", tags=["Interaction Tracking Operations"])
 
 
 @app.get("/")

@@ -1,5 +1,6 @@
 from datetime import datetime, timedelta
 from typing import List
+from bson import ObjectId
 from fastapi import APIRouter, Depends, HTTPException, Request, status
 from fastapi.responses import JSONResponse, RedirectResponse
 from sqlalchemy.orm import Session, joinedload
@@ -22,4 +23,50 @@ async def add_interaction(lead_id: int, interaction: Interaction):
         result = await collection.insert_one(interaction)
         return interaction
     except Exception as e:
+        raise HTTPException(status_code=400, detail=f"An error occurred: {e}")
+    
+@router.get('/interactions/{lead_id}', response_model=List[Interaction])
+async def get_interactions(lead_id: int):
+    interactions = await collection.find({"lead_id": lead_id}).to_list(length=1000)
+    return interactions
+
+@router.get('/interactions', response_model=List[Interaction])
+async def get_all_interactions():
+    interactions = await collection.find({}).to_list(length=1000)
+    return interactions
+
+# @router.get('/interactions/{interaction_id}', response_model=Interaction)
+# async def get_interaction(interaction_id: str):
+#     try:
+#         print('h')
+#         interaction_id = ObjectId(interaction_id)
+#     except Exception:
+#         raise HTTPException(status_code=400, detail="Invalid interaction ID format")
+#     interaction = await collection.find_one({"_id": interaction_id})
+    
+#     if interaction is None:
+#         raise HTTPException(status_code=404, detail="Interaction not found")
+#     return interaction
+
+@router.put('/interactions/{interaction_id}', response_model=Interaction)
+async def update_interaction(interaction_id: str, interaction: Interaction):
+    interaction = interaction.model_dump()
+    try:
+        result = await collection.update_one({"_id": ObjectId(interaction_id)}, {"$set": interaction})
+        if result.modified_count == 1:
+            return interaction
+        else:
+            raise HTTPException(status_code=404, detail="Interaction not found") 
+    except Exception as e:   
+        raise HTTPException(status_code=400, detail=f"An error occurred: {e}")
+    
+@router.delete('/interactions/{interaction_id}', response_model=dict)
+async def delete_interaction(interaction_id: str):
+    try:
+        result = await collection.delete_one({"_id": ObjectId(interaction_id)})    
+        if result.deleted_count == 1:
+            return {"status": "success", "message": "Interaction deleted"}
+        else:
+            raise HTTPException(status_code=404, detail="Interaction not found")
+    except Exception as e:  
         raise HTTPException(status_code=400, detail=f"An error occurred: {e}")

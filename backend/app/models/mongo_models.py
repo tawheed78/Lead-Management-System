@@ -1,4 +1,5 @@
 from datetime import datetime
+from bson import ObjectId
 from pydantic import BaseModel
 from typing import List, Optional
 from enum import Enum
@@ -36,3 +37,8 @@ class Interaction(BaseModel):
     order: Optional[List[Order]] = None
     interaction_notes: Optional[str] = None
     follow_up: FollowUp
+    class Config:
+        json_encoders = {
+            datetime: lambda v: v.isoformat(),
+            ObjectId: str,  # Convert ObjectId to string for serialization
+        }

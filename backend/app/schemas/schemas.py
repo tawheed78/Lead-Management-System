@@ -23,10 +23,11 @@ class POC(BaseModel):
 class CallBase(BaseModel):
     lead_id: int
     frequency: int
-    last_call_date: datetime
+    last_call_date: Optional[datetime] = None
+    next_call_date: Optional[datetime] = None
 
     class Config:
-        orm_mode = True
+        from_attributes = True
 
 class CallCreate(CallBase):
     pass
@@ -36,6 +37,6 @@ class CallUpdateFrequency(BaseModel):
 
 class CallToday(BaseModel):
     lead_id: int
-    last_call_date: datetime
+    next_call_date: datetime
 
 

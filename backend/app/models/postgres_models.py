@@ -35,6 +35,7 @@ class CallModel(Base):
     lead_id = Column(Integer, ForeignKey("leads.id"))
     frequency = Column(Integer)
     last_call_date = Column(DateTime, default=None, nullable=True)
+    next_call_date = Column(DateTime, default=None, nullable=True)
 
     # Relationships
     lead = relationship("LeadModel", back_populates="calls")

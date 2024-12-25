@@ -7,7 +7,11 @@ class LeadModel(Base):
     __tablename__ = "leads"
     id = Column(Integer, primary_key=True, index=True)
     name = Column(String, nullable=False)
-
+    address = Column(String, nullable=False)
+    zipcode = Column(String, nullable=False)
+    state = Column(String, nullable=False)
+    country = Column(String, nullable=False)
+    area_of_interest = Column(String, nullable=False)
     status = Column(String, default='new')
     created_at = Column(DateTime, default=datetime.now())
 

@@ -54,7 +54,7 @@ well_performing_pipeline = [
 under_performing_pipeline = [
     {
         "$match": {
-            "interaction_date": {"$gte": start_date}  # Filter interactions from the last 30 days
+            "interaction_date": {"$gte": start_date}
         }
     },
     {
@@ -62,10 +62,10 @@ under_performing_pipeline = [
             "lead_id": 1,
             "order_values": {
                 "$map": {
-                    "input": "$order",  # Iterate over each order
+                    "input": "$order",
                     "as": "item",
                     "in": {
-                        "$cond": {  # Ensure that price and quantity are valid numbers
+                        "$cond": {
                             "if": {
                                 "$and": [
                                     {"$isNumber": "$$item.price"},
@@ -74,11 +74,11 @@ under_performing_pipeline = [
                             },
                             "then": {
                                 "$multiply": [
-                                    {"$toDouble": "$$item.price"},  # Ensure price is numeric
-                                    {"$toDouble": "$$item.quantity"}  # Ensure quantity is numeric
+                                    {"$toDouble": "$$item.price"},
+                                    {"$toDouble": "$$item.quantity"}
                                 ]
                             },
-                            "else": 0  # If not valid, return 0
+                            "else": 0
                         }
                     }
                 }
@@ -87,17 +87,17 @@ under_performing_pipeline = [
         }
     },
     {
-        "$match": {  # Only include documents where order_values is not empty
+        "$match": {
             "order_values": {"$ne": []}
         }
     },
     {
         "$group": {
-            "_id": "$lead_id",  # Group by lead_id
-            "order_count": {"$sum": {"$size": "$order_values"}},  # Count the number of items in all orders
-            "total_order_value": {"$sum": "$order_values"},  # Sum of order values
-            "avg_order_value": {"$avg": "$order_values"},  # Average order value
-            "last_interaction_date": {"$max": "$interaction_date"}  # Find the most recent interaction date
+            "_id": "$lead_id",
+            "order_count": {"$sum": {"$size": "$order_values"}},
+            "total_order_value": {"$sum": "$order_values"},
+            "avg_order_value": {"$avg": "$order_values"},
+            "last_interaction_date": {"$max": "$interaction_date"}
         }
     },
     {
@@ -113,11 +113,12 @@ under_performing_pipeline = [
 
 @router.get('/well-performing', response_model=List[dict])
 async def get_performance():
-    performance = await collection.aggregate(well_performing_pipeline).to_list(length=1000)
+    performance = await collection.aggregate(well_performing_pipeline).to_list(length=100)
     return performance
+
 
 @router.get('/under-performing', response_model=List[dict])
 async def get_performance():
-    performance = await collection.aggregate(under_performing_pipeline).to_list(length=1000)
+    performance = await collection.aggregate(under_performing_pipeline).to_list(length=100)
     return performance
 

@@ -1,3 +1,5 @@
+"""Postgres Database Configuration Module"""
+
 import os
 from dotenv import load_dotenv
 from sqlalchemy import create_engine, text
@@ -12,13 +14,14 @@ DB_NAME = os.getenv('POSTGRES_DB')
 
 # Create engine without specifying the database name (for creating the database if not exists)
 engine_without_db = create_engine(POSTGRES_URL.rsplit('/', 1)[0])
-engine = create_engine(POSTGRES_URL) 
+engine = create_engine(POSTGRES_URL)
 
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 Base = declarative_base()
 
-# Function to create the database if it does not exist
+
 def create_database_if_not_exists():
+    "Function to create the database if it does not exist"
     try:
         with engine_without_db.connect() as conn:
             result = conn.execute(
@@ -32,8 +35,9 @@ def create_database_if_not_exists():
     except ProgrammingError as e:
         print(f"Failed to check or create the database: {e}")
 
-# Function to create a session
+
 def get_postgres_db():
+    "Function to create a session for the database"
     db = SessionLocal()
     try:
         yield db

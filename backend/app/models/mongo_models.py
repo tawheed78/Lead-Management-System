@@ -1,14 +1,19 @@
+"Model Configuration Module for MongoDB"
+
+from typing import List, Optional
+from enum import Enum
 from datetime import datetime
 from bson import ObjectId
 from pydantic import BaseModel
-from typing import List, Optional
-from enum import Enum
+
 
 class FollowUp(str, Enum):
+    "Enum Class for follow-up status"
     YES = "Yes"
     NO = "No"
 
 class InteractionType(str, Enum):
+    "Enum Class for interaction type"
     CALL = "Call"
     EMAIL = "Email"
     MEETING = "Meeting"
@@ -24,12 +29,14 @@ class InteractionType(str, Enum):
     OTHER = "Other"
 
 class Order(BaseModel):
+    "Order Model"
     item: str
     quantity: int
     price: float
 
 
 class Interaction(BaseModel):
+    "Interaction Model"
     lead_id: int
     call_id: Optional[int] = None
     interaction_type: InteractionType
@@ -38,6 +45,7 @@ class Interaction(BaseModel):
     interaction_notes: Optional[str] = None
     follow_up: FollowUp
     class Config:
+        "Pydantic Configuration"
         json_encoders = {
             datetime: lambda v: v.isoformat(),
             ObjectId: str,  # Convert ObjectId to string for serialization

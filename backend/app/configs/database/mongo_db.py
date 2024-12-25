@@ -1,7 +1,6 @@
-"""Database Configuration Module"""
+"""Mongo Database Configuration Module"""
 
 import os
-import logging
 from motor.motor_asyncio import AsyncIOMotorClient
 from dotenv import load_dotenv
 from pymongo.errors import PyMongoError
@@ -15,7 +14,7 @@ class MongoDbDatabase:
     """
     A class to interact with MongoDB for URL shortening service.
     """
-    def __init__(self, databaseName, collectionName, connection_string=CONNECTION_STRING):
+    def __init__(self, database_name, collection_name, connection_string=CONNECTION_STRING):
         """
         Initializes the MongoDbDatabase instance and establishes a connection to the MongoDB server.
 
@@ -27,11 +26,11 @@ class MongoDbDatabase:
         self.connection_string = connection_string
         try:
             self.client = AsyncIOMotorClient(connection_string)
-            self.databaseName = databaseName
-            self.db = self.client[self.databaseName]
-            self.collection = self.db[collectionName]
+            self.database_name = database_name
+            self.db = self.client[self.database_name]
+            self.collection = self.db[collection_name]
         except PyMongoError as e:
-            raise
+            raise e
 
     def get_db(self):
         """
@@ -45,15 +44,18 @@ class MongoDbDatabase:
         """
         return self.collection
 
-    def set_collection(self, collectionName):
+    def set_collection(self, collection_name):
         """
         Sets the MongoDB collection instance to a new collection.
 
         Args:
             collection_name (str): The name of the new collection.
         """
-        self.collection = self.db[collectionName]
+        self.collection = self.db[collection_name]
 
 
 # Initialize the db_instance with a default collection
-db_instance = MongoDbDatabase(databaseName="lead_management_database", collectionName="default_collection")
+db_instance = MongoDbDatabase(
+    database_name="lead_management_database",
+    collection_name="default_collection"
+    )

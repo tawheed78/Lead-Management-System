@@ -5,6 +5,7 @@ from jose import JWTError, jwt # type: ignore
 from datetime import datetime, timedelta
 from passlib.context import CryptContext # type: ignore
 import os
+import pytz # type: ignore
 from dotenv import load_dotenv
 
 load_dotenv(dotenv_path="app/.env")
@@ -46,12 +47,7 @@ def get_current_user(token: str = Depends(oauth2_scheme)):
         raise HTTPException(status_code=401, detail="Invalid token")
     return payload
 
-# def has_permission(required_role: str):
-#     def role_checker(payload: dict = Depends(get_current_user)):
-#         if payload["role"] != required_role:
-#             raise HTTPException(status_code=403, detail="Insufficient permissions")
-#         return payload
-#     return role_checker
+
 def has_permission(required_roles: List[str]):
     def permission_dependency(token: str = Depends(oauth2_scheme)):
         payload = decode_token(token)
@@ -63,5 +59,16 @@ def has_permission(required_roles: List[str]):
             raise HTTPException(
                 status_code=403, detail=f"Insufficient permissions. Required role: {required_roles}"
             )
-        return True  # Permission granted
+        return True
     return Depends(permission_dependency)
+
+def convert_to_ist(call_time: datetime, lead_timezone: str):
+    # Lead's local timezone
+    local_tz = pytz.timezone(lead_timezone)
+    local_time = local_tz.localize(call_time)
+    # Convert to IST
+    ist_tz = pytz.timezone("Asia/Kolkata")
+    ist_time = local_time.astimezone(ist_tz)
+    #Removing timezone info
+    naive_ist_time = ist_time.replace(tzinfo=None)
+    return naive_ist_time

@@ -34,6 +34,7 @@ class LeadCreate(Lead):
     zipcode: str
     state : str
     country : str
+    timezone : str = 'Asia/Kolkata'
     area_of_interest : str
 
 class LeadList(Lead):
@@ -53,14 +54,12 @@ class POC(BaseModel):
 class CallBase(BaseModel):
     lead_id: int
     frequency: int
-    last_call_date: Optional[datetime] = None
-    next_call_date: Optional[datetime] = None
 
     class Config:
         from_attributes = True
 
 class CallCreate(CallBase):
-    pass
+    next_call_date: Optional[datetime]
 
 class CallUpdateFrequency(BaseModel):
     frequency: int

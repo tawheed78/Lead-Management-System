@@ -52,6 +52,7 @@ class LeadModel(Base):
     zipcode = Column(String, nullable=False)
     state = Column(String, nullable=False)
     country = Column(String, nullable=False)
+    timezone = Column(String, nullable=False, default='Asia/Kolkata')
     area_of_interest = Column(String, nullable=False)
     status = Column(String, default='new')
     created_at = Column(DateTime, default=datetime.now())

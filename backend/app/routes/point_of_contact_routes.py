@@ -10,7 +10,7 @@ from ..utils.utils import has_permission
 router = APIRouter()
 
 @router.post('/{lead_id}/poc', response_model=POC)
-async def add_poc(lead_id: int, poc: POC, db: Session = Depends(get_postgres_db), permissions: bool = has_permission(["sales"])):
+async def add_poc(lead_id: int, poc: POC, db: Session = Depends(get_postgres_db), permissions: bool = has_permission(["sales", 'admin'])):
     try:
         db_lead = db.query(LeadModel).filter(LeadModel.id == lead_id).first()
         if not db_lead:

@@ -1,16 +1,13 @@
-from datetime import datetime, timedelta
 from typing import List
-from fastapi import APIRouter, Depends, HTTPException, Request, status
-from fastapi.responses import JSONResponse, RedirectResponse
-from sqlalchemy.orm import Session, joinedload
-
-from ..models.postgres_models import LeadModel, PointOfContactModel, CallModel
+from fastapi import APIRouter, Depends, HTTPException
+from sqlalchemy.orm import Session
+from ..models.postgres_models import LeadModel
 from ..configs.database.postgres_db import get_postgres_db
-from ..schemas.schemas import Lead, LeadList, POC, CallCreate, CallUpdateFrequency, CallToday
-
+from ..schemas.schemas import Lead, LeadList
 
 
 router = APIRouter()
+
 
 @router.post('/', response_model=Lead)
 async def lead(lead: Lead, db: Session = Depends(get_postgres_db)):
@@ -22,6 +19,7 @@ async def lead(lead: Lead, db: Session = Depends(get_postgres_db)):
     db.commit()
     db.refresh(db_lead)
     return db_lead
+
 
 @router.get('/', response_model=List[LeadList])
 async def leads(db: Session = Depends(get_postgres_db)):
@@ -35,6 +33,7 @@ async def get_lead(lead_id: int, db: Session = Depends(get_postgres_db)):
         raise HTTPException(status_code=404, detail="Lead not found")
     return db_lead
 
+
 @router.put('/{lead_id}', response_model=Lead)
 async def update_lead(lead_id: int, lead: Lead, db: Session = Depends(get_postgres_db)):
     db_lead = db.query(LeadModel).filter(LeadModel.id == lead_id).first()
@@ -45,6 +44,7 @@ async def update_lead(lead_id: int, lead: Lead, db: Session = Depends(get_postgr
     db.commit()
     db.refresh(db_lead)
     return db_lead
+
 
 @router.delete('/{lead_id}')
 async def delete_lead(lead_id: int, db: Session = Depends(get_postgres_db)):

@@ -5,7 +5,9 @@ from ..models.postgres_models import LeadModel, PointOfContactModel
 from ..configs.database.postgres_db import get_postgres_db
 from ..schemas.schemas import POC
 
+
 router = APIRouter()
+
 
 @router.post('/{lead_id}/poc', response_model=POC)
 async def add_poc(lead_id: int, poc: POC, db: Session = Depends(get_postgres_db)):
@@ -24,9 +26,32 @@ async def add_poc(lead_id: int, poc: POC, db: Session = Depends(get_postgres_db)
     db.refresh(db_poc)
     return db_poc
 
+
+@router.get('/poc', response_model=List[POC])
+async def get_all_pocs(db: Session = Depends(get_postgres_db)):
+    return db.query(PointOfContactModel).all()
+
+
 @router.get('/{lead_id}/poc', response_model=List[POC])
 async def get_pocs(lead_id: int, db:Session = Depends(get_postgres_db)):
     db_lead = db.query(LeadModel).filter(LeadModel.id == lead_id).first()
     if not db_lead:
         raise HTTPException(status_code=404, detail="Lead not found")
     return db.query(PointOfContactModel).filter(PointOfContactModel.lead_id == lead_id).all()
+
+
+@router.put('/{lead_id}/poc/{poc_id}', response_model=POC)
+async def update_poc(lead_id: int, poc_id: int, poc: POC, db: Session = Depends(get_postgres_db)):
+    db_lead = db.query(LeadModel).filter(LeadModel.id == lead_id).first()
+    if not db_lead:
+        raise HTTPException(status_code=404, detail="Lead not found")
+    db_poc = db.query(PointOfContactModel).filter(PointOfContactModel.id == poc_id).first()
+    if not db_poc:
+        raise HTTPException(status_code=404, detail="Point of contact not found")
+    db_poc.name = poc.name
+    db_poc.role = poc.role
+    db_poc.email = poc.email
+    db_poc.phone_number = poc.phone_number
+    db.commit()
+    db.refresh(db_poc)
+    return db_poc

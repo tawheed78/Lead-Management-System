@@ -21,8 +21,6 @@ async def add_interaction(lead_id: int, interaction: Interaction, db: Session = 
     interaction["lead_id"] = lead_id
     interaction["interaction_date"] = datetime.now()
     if interaction.get("order"):
-        print(interaction["order"])
-        print(interaction.get('order'))
         for order_item in interaction["order"]:
             if not order_item.get("price") or not order_item.get("quantity"):
                 raise HTTPException(status_code=400, detail="Price and quantity are required for each order item")

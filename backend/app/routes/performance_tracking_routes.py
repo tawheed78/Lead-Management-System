@@ -1,7 +1,7 @@
 from datetime import datetime, timedelta
 from typing import List
-from bson import ObjectId
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter
+from ..utils.utils import has_permission
 from ..models.mongo_models import Interaction
 from ..configs.database.mongo_db import db_instance
 
@@ -112,13 +112,13 @@ under_performing_pipeline = [
 
 
 @router.get('/well-performing', response_model=List[dict])
-async def get_performance():
+async def get_performance(permissions: bool = has_permission(["sales", "viewer", "admin"])):
     performance = await collection.aggregate(well_performing_pipeline).to_list(length=100)
     return performance
 
 
 @router.get('/under-performing', response_model=List[dict])
-async def get_performance():
+async def get_performance(permissions: bool = has_permission(["sales", "viewer", "admin"])):
     performance = await collection.aggregate(under_performing_pipeline).to_list(length=100)
     return performance
 

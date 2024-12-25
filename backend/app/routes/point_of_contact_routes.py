@@ -4,13 +4,13 @@ from sqlalchemy.orm import Session
 from ..models.postgres_models import LeadModel, PointOfContactModel
 from ..configs.database.postgres_db import get_postgres_db
 from ..schemas.schemas import POC
-
+from ..utils.utils import has_permission
 
 router = APIRouter()
 
 
 @router.post('/{lead_id}/poc', response_model=POC)
-async def add_poc(lead_id: int, poc: POC, db: Session = Depends(get_postgres_db)):
+async def add_poc(lead_id: int, poc: POC, db: Session = Depends(get_postgres_db), permissions: bool = has_permission(["sales"])):
     db_lead = db.query(LeadModel).filter(LeadModel.id == lead_id).first()
     if not db_lead:
         raise HTTPException(status_code=404, detail="Lead not found")
@@ -28,12 +28,12 @@ async def add_poc(lead_id: int, poc: POC, db: Session = Depends(get_postgres_db)
 
 
 @router.get('/poc', response_model=List[POC])
-async def get_all_pocs(db: Session = Depends(get_postgres_db)):
+async def get_all_pocs(db: Session = Depends(get_postgres_db), permissions: bool = has_permission(["sales"])):
     return db.query(PointOfContactModel).all()
 
 
-@router.get('/{lead_id}/poc', response_model=List[POC])
-async def get_pocs(lead_id: int, db:Session = Depends(get_postgres_db)):
+@router.get('/{lead_id}/pocs', response_model=List[POC])
+async def get_pocs(lead_id: int, db:Session = Depends(get_postgres_db), permissions: bool = has_permission(["sales"])):
     db_lead = db.query(LeadModel).filter(LeadModel.id == lead_id).first()
     if not db_lead:
         raise HTTPException(status_code=404, detail="Lead not found")
@@ -41,7 +41,7 @@ async def get_pocs(lead_id: int, db:Session = Depends(get_postgres_db)):
 
 
 @router.put('/{lead_id}/poc/{poc_id}', response_model=POC)
-async def update_poc(lead_id: int, poc_id: int, poc: POC, db: Session = Depends(get_postgres_db)):
+async def update_poc(lead_id: int, poc_id: int, poc: POC, db: Session = Depends(get_postgres_db), permissions: bool = has_permission(["admin"])):
     db_lead = db.query(LeadModel).filter(LeadModel.id == lead_id).first()
     if not db_lead:
         raise HTTPException(status_code=404, detail="Lead not found")
@@ -57,7 +57,7 @@ async def update_poc(lead_id: int, poc_id: int, poc: POC, db: Session = Depends(
     return db_poc
 
 @router.delete('/{lead_id}/poc/{poc_id}')
-async def delete_poc(lead_id: int, poc_id: int, db: Session = Depends(get_postgres_db)):
+async def delete_poc(lead_id: int, poc_id: int, db: Session = Depends(get_postgres_db), permissions: bool = has_permission(["admin"])):
     db_lead = db.query(LeadModel).filter(LeadModel.id == lead_id).first()
     if not db_lead:
         raise HTTPException(status_code=404, detail="Lead not found")

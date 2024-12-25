@@ -30,7 +30,11 @@ class Lead(BaseModel):
         from_attributes = True
 
 class LeadCreate(Lead):
-    pass
+    address: str
+    zipcode: str
+    state : str
+    country : str
+    area_of_interest : str
 
 class LeadList(Lead):
     created_at: datetime

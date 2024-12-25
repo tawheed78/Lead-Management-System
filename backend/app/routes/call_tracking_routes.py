@@ -4,6 +4,8 @@ from fastapi import APIRouter, Depends, HTTPException, Request, status
 from fastapi.responses import JSONResponse, RedirectResponse
 from sqlalchemy.orm import Session, joinedload
 
+from ..utils.utils import has_permission
+
 from ..models.postgres_models import LeadModel, CallModel
 from ..configs.database.postgres_db import get_postgres_db
 from ..schemas.schemas import CallCreate, CallUpdateFrequency, CallToday
@@ -11,7 +13,7 @@ from ..schemas.schemas import CallCreate, CallUpdateFrequency, CallToday
 router = APIRouter()
 
 @router.post('/{lead_id}/call', response_model=CallCreate)
-async def add_call(lead_id: int, call: CallCreate, db: Session = Depends(get_postgres_db)):
+async def add_call(lead_id: int, call: CallCreate, db: Session = Depends(get_postgres_db), permissions: bool = has_permission(["sales"])):
     db_lead = db.query(LeadModel).filter(LeadModel.id == lead_id).first()
     if not db_lead:
         raise HTTPException(status_code=404, detail="Lead not found")
@@ -22,8 +24,9 @@ async def add_call(lead_id: int, call: CallCreate, db: Session = Depends(get_pos
     db.refresh(db_call)
     return db_call
 
+
 @router.put('/{lead_id}/call/{call_id}', response_model=CallCreate)
-async def update_call_frequency(lead_id: int, call_id: int, call: CallUpdateFrequency, db: Session = Depends(get_postgres_db)):
+async def update_call_frequency(lead_id: int, call_id: int, call: CallUpdateFrequency, db: Session = Depends(get_postgres_db), permissions: bool = has_permission(["sales"])):
     db_call = db.query(CallModel).filter(CallModel.id == call_id, CallModel.lead_id == lead_id).first()
     if not db_call:
         raise HTTPException(status_code=404, detail="Call not found")
@@ -35,7 +38,7 @@ async def update_call_frequency(lead_id: int, call_id: int, call: CallUpdateFreq
 
 
 @router.put('/{lead_id}/call/{call_id}/log', response_model=CallCreate)
-async def update_call_log(lead_id:int, call_id:int, db: Session = Depends(get_postgres_db)):
+async def update_call_log(lead_id:int, call_id:int, db: Session = Depends(get_postgres_db), permissions: bool = has_permission(["sales"])):
     db_call = db.query(CallModel).filter(CallModel.id == call_id, CallModel.lead_id == lead_id).first()
     if not db_call:
         raise HTTPException(status_code=404, detail="Call not found")
@@ -47,10 +50,9 @@ async def update_call_log(lead_id:int, call_id:int, db: Session = Depends(get_po
 
 
 @router.get('/calls/today', response_model=List[CallToday])
-async def calls_today(db: Session = Depends(get_postgres_db)):
+async def calls_today(db: Session = Depends(get_postgres_db), permissions: bool = has_permission(["sales", 'viewer'])):
     today = datetime.now().date()
     calls = db.query(CallModel).options(joinedload(CallModel.lead)).filter(CallModel.next_call_date == today).all()
-    
     result = []
     for call in calls:
         result.append(CallToday(

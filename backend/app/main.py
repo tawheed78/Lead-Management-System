@@ -6,6 +6,7 @@ from .routes.point_of_contact_routes import router as point_of_contact_router
 from .routes.call_tracking_routes import router as call_tracking_router
 from .routes.interaction_tracking_routes import router as interaction_tracking_router
 from .routes.performance_tracking_routes import router as performance_tracking_router
+from .routes.user_routes import router as user_router
 
 
 app = FastAPI()
@@ -20,6 +21,7 @@ app = FastAPI()
 #     allow_headers=["*"]
 # )
 
+app.include_router(user_router, prefix="/api/user", tags=["User Operations"])
 app.include_router(lead_router, prefix="/api/lead", tags=["Lead Operations"])
 app.include_router(point_of_contact_router, prefix="/api/lead", tags=["Point of Contact Operations"])
 app.include_router(call_tracking_router, prefix="/api", tags=["Call Tracking Operations"])

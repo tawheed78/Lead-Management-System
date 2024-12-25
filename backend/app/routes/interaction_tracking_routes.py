@@ -3,7 +3,7 @@ from typing import List
 from bson import ObjectId
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
-
+from sqlalchemy.exc import SQLAlchemyError
 from ..utils.utils import has_permission
 
 from ..models.postgres_models import LeadModel
@@ -19,38 +19,49 @@ collection = db_instance.get_collection()
 
 @router.post('/interactions/{lead_id}', response_model=Interaction)
 async def add_interaction(lead_id: int, interaction: Interaction, db: Session = Depends(get_postgres_db), permissions: bool = has_permission(["sales"])):
-    interaction = interaction.model_dump()
-    db_lead = db.query(LeadModel).filter(LeadModel.id == lead_id).first()
-    interaction["lead_id"] = lead_id
-    interaction["interaction_date"] = datetime.now()
-    if interaction.get("order"):
-        for order_item in interaction["order"]:
-            if not order_item.get("price") or not order_item.get("quantity"):
-                raise HTTPException(status_code=400, detail="Price and quantity are required for each order item")
-        db_lead.status = "converted"
-        db.commit()
-        db.refresh(db_lead)
-    else:
-        db_lead.status = "contacted"
-        db.commit()
-        db.refresh(db_lead)
     try:
+        interaction = interaction.model_dump()
+        db_lead = db.query(LeadModel).filter(LeadModel.id == lead_id).first()
+        if not db_lead:
+            raise HTTPException(status_code=404, detail="Lead not found")
+        interaction["lead_id"] = lead_id
+        interaction["interaction_date"] = datetime.now()
+        if interaction.get("order"):
+            for order_item in interaction["order"]:
+                if not order_item.get("price") or not order_item.get("quantity"):
+                    raise HTTPException(status_code=400, detail="Price and quantity are required for each order item")
+            db_lead.status = "converted"
+            db.commit()
+            db.refresh(db_lead)
+        else:
+            db_lead.status = "contacted"
+            db.commit()
+            db.refresh(db_lead)
         result = await collection.insert_one(interaction)
         return interaction
+    except SQLAlchemyError as e:
+        db.rollback()
+        raise HTTPException(status_code=500, detail=f"Database error: {e}")
     except Exception as e:
         raise HTTPException(status_code=400, detail=f"An error occurred: {e}")
     
 
 @router.get('/interactions/{lead_id}', response_model=List[Interaction])
-async def get_interactions(lead_id: int, permissions: bool = has_permission(["sales", "viewer", "admin"])):
-    interactions = await collection.find({"lead_id": lead_id}).to_list(length=1000)
-    return interactions
+async def get_interactions(lead_id: int, db: Session = Depends(get_postgres_db), permissions: bool = has_permission(["sales", "viewer", "admin"])):
+    try:
+        interactions = await collection.find({"lead_id": lead_id}).to_list(length=1000)
+        return interactions
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"An error occurred: {e}")
 
 
 @router.get('/interactions', response_model=List[Interaction])
-async def get_all_interactions(permissions: bool = has_permission(["sales", "viewer", "admin"])):
-    interactions = await collection.find({}).to_list(length=1000)
-    return interactions
+async def get_all_interactions(db: Session = Depends(get_postgres_db), permissions: bool = has_permission(["sales", "viewer", "admin"])):
+    try:
+        interactions = await collection.find({}).to_list(length=1000)
+        return interactions
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"An error occurred: {e}")
 
 # @router.get('/interactions/{interaction_id}', response_model=Interaction)
 # async def get_interaction(interaction_id: str):
@@ -65,15 +76,15 @@ async def get_all_interactions(permissions: bool = has_permission(["sales", "vie
 #         raise HTTPException(status_code=404, detail="Interaction not found")
 #     return interaction
 
-@router.put('/interactions/{interaction_id}', response_model=Interaction)
-async def update_interaction(interaction_id: str, interaction: Interaction, permissions: bool = has_permission(["sales"])):
+@router.put('/interactions/{lead_id}/{interaction_id}', response_model=Interaction)
+async def update_interaction(lead_id: str, interaction_id: str, interaction: Interaction, permissions: bool = has_permission(["sales"])):
     interaction = interaction.model_dump()
     try:
         result = await collection.update_one({"_id": ObjectId(interaction_id)}, {"$set": interaction})
         if result.modified_count == 1:
-            return interaction
-        else:
-            raise HTTPException(status_code=404, detail="Interaction not found") 
+            updated_interaction = await collection.find_one({"_id": ObjectId(interaction_id)})
+            return updated_interaction
+        raise HTTPException(status_code=404, detail="Interaction not found") 
     except Exception as e:   
         raise HTTPException(status_code=400, detail=f"An error occurred: {e}")
     
@@ -84,7 +95,6 @@ async def delete_interaction(interaction_id: str, permissions: bool = has_permis
         result = await collection.delete_one({"_id": ObjectId(interaction_id)})    
         if result.deleted_count == 1:
             return {"status": "success", "message": "Interaction deleted"}
-        else:
-            raise HTTPException(status_code=404, detail="Interaction not found")
+        raise HTTPException(status_code=404, detail="Interaction not found")
     except Exception as e:  
         raise HTTPException(status_code=400, detail=f"An error occurred: {e}")

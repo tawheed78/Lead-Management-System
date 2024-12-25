@@ -9,7 +9,7 @@ from sqlalchemy.exc import ProgrammingError
 
 load_dotenv(dotenv_path="app/.env")
 
-POSTGRES_URL = os.getenv('POSTGRES_URL')
+POSTGRES_URL = os.getenv('POSTGRES_URL',"sqlite:///./test.db")
 DB_NAME = os.getenv('POSTGRES_DB')
 
 # Create engine without specifying the database name (for creating the database if not exists)

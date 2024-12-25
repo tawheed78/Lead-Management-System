@@ -1,13 +1,13 @@
 from datetime import datetime, timedelta
 from typing import List
 from bson import ObjectId
-from fastapi import APIRouter, Depends, HTTPException, Request, status
-from fastapi.responses import JSONResponse, RedirectResponse
-from sqlalchemy.orm import Session, joinedload
+from fastapi import APIRouter, Depends, HTTPException
+from sqlalchemy.orm import Session
 
+from ..models.postgres_models import LeadModel
 from ..models.mongo_models import Interaction
 from ..configs.database.mongo_db import db_instance
-from ..schemas.schemas import Lead, LeadList, POC, CallCreate, CallUpdateFrequency, CallToday
+from ..configs.database.postgres_db import get_postgres_db
 
 router = APIRouter()
 
@@ -15,10 +15,24 @@ db_instance.set_collection("interaction_tracking_collection")
 collection = db_instance.get_collection()
 
 @router.post('/interactions/{lead_id}', response_model=Interaction)
-async def add_interaction(lead_id: int, interaction: Interaction):
+async def add_interaction(lead_id: int, interaction: Interaction, db: Session = Depends(get_postgres_db)):
     interaction = interaction.model_dump()
+    db_lead = db.query(LeadModel).filter(LeadModel.id == lead_id).first()
     interaction["lead_id"] = lead_id
     interaction["interaction_date"] = datetime.now()
+    if interaction.get("order"):
+        print(interaction["order"])
+        print(interaction.get('order'))
+        for order_item in interaction["order"]:
+            if not order_item.get("price") or not order_item.get("quantity"):
+                raise HTTPException(status_code=400, detail="Price and quantity are required for each order item")
+        db_lead.status = "converted"
+        db.commit()
+        db.refresh(db_lead)
+    else:
+        db_lead.status = "contacted"
+        db.commit()
+        db.refresh(db_lead)
     try:
         result = await collection.insert_one(interaction)
         return interaction

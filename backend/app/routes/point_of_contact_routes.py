@@ -55,3 +55,15 @@ async def update_poc(lead_id: int, poc_id: int, poc: POC, db: Session = Depends(
     db.commit()
     db.refresh(db_poc)
     return db_poc
+
+@router.delete('/{lead_id}/poc/{poc_id}')
+async def delete_poc(lead_id: int, poc_id: int, db: Session = Depends(get_postgres_db)):
+    db_lead = db.query(LeadModel).filter(LeadModel.id == lead_id).first()
+    if not db_lead:
+        raise HTTPException(status_code=404, detail="Lead not found")
+    db_poc = db.query(PointOfContactModel).filter(PointOfContactModel.id == poc_id).first()
+    if not db_poc:
+        raise HTTPException(status_code=404, detail="Point of contact not found")
+    db.delete(db_poc)
+    db.commit()
+    return {"message": "Point of contact deleted successfully"}

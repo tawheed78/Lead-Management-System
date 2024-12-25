@@ -1,6 +1,26 @@
+from enum import Enum
 from typing import Optional
 from pydantic import BaseModel
 from datetime import datetime
+
+class Role(str, Enum):
+    ADMIN = 'admin'
+    SALES =  'sales'
+    VIEWER = 'viewer'
+
+class User(BaseModel):
+    username: str
+    email: str
+    role: Role
+    full_name: str
+    class config:
+        from_attributes = True
+
+class UserCreate(User):
+    password: str
+
+class UserList(User):
+    created_at: datetime
 
 class Lead(BaseModel):
     name: str

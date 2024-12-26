@@ -30,9 +30,9 @@ async def login(form_data: OAuth2PasswordRequestForm = Depends(), db = Depends(g
     access_token = create_access_token(data={"sub": form_data.username, "role": user.role})
     return {"access_token": access_token, "token_type": "bearer"}
 
-# @router.get("/users/me")
-# async def read_users_me(token: str = Depends(oauth2_scheme)):
-#     payload = decode_token(token)
-#     if not payload:
-#         raise HTTPException(status_code=401, detail="Invalid token")
-#     return {"username": payload["sub"], "role": payload["role"]}
+@router.get("/auth/me")
+async def read_users_me(token: str = Depends(oauth2_scheme)):
+    payload = decode_token(token)
+    if not payload:
+        raise HTTPException(status_code=401, detail="Invalid token")
+    return {"username": payload["sub"], "role": payload["role"]}

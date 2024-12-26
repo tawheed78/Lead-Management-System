@@ -1,5 +1,6 @@
 from datetime import datetime, timedelta
 from typing import List
+from sqlalchemy import DateTime, cast
 from fastapi import APIRouter, Depends, HTTPException, Request, status
 from fastapi.responses import JSONResponse, RedirectResponse
 from sqlalchemy.orm import Session, joinedload
@@ -69,9 +70,14 @@ async def update_call_log(lead_id:int, call_id:int, db: Session = Depends(get_po
 
 
 @router.get('/calls/today', response_model=List[CallToday])
-async def calls_today(db: Session = Depends(get_postgres_db), permissions: bool = has_permission(["sales", 'viewer'])):
-    today = datetime.now().date()
-    calls = db.query(CallModel).options(joinedload(CallModel.lead)).filter(CallModel.next_call_date == today).all()
+async def calls_today(db: Session = Depends(get_postgres_db), permissions: bool = has_permission(["sales", 'viewer', 'admin'])):
+    today = datetime.now()
+    calls = (
+        db.query(CallModel)
+        .options(joinedload(CallModel.lead))
+        .filter(cast(CallModel.next_call_date, DateTime) >= today)
+        .all()
+    )
     result = []
     for call in calls:
         result.append(CallToday(

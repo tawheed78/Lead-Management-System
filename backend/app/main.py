@@ -11,15 +11,18 @@ from .routes.user_routes import router as user_router
 
 app = FastAPI()
 
+origins = [
+    "http://localhost:3000",
+    "http://localhost:8000",
+]
 
-
-# app.add_middleware(
-#     CORSMiddleware,
-#     allow_origins=["localhost"],
-#     allow_credentials=True,
-#     allow_methods=["*"],
-#     allow_headers=["*"]
-# )
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"]
+)
 
 app.include_router(user_router, prefix="/api/user", tags=["User Operations"])
 app.include_router(lead_router, prefix="/api/lead", tags=["Lead Operations"])

@@ -1,7 +1,7 @@
 from enum import Enum
 from typing import Optional
 from pydantic import BaseModel
-from datetime import datetime
+from datetime import datetime, date
 
 class Role(str, Enum):
     ADMIN = 'admin'
@@ -24,12 +24,12 @@ class UserList(User):
 
 class Lead(BaseModel):
     name: str
-    status : Optional[str] = 'new'
+    status : Optional[str] = 'New'
 
     class config:
         from_attributes = True
 
-class LeadCreate(Lead):
+class LeadCreateUpdate(Lead):
     address: str
     zipcode: str
     state : str
@@ -37,9 +37,9 @@ class LeadCreate(Lead):
     timezone : str = 'Asia/Kolkata'
     area_of_interest : str
 
-class LeadList(Lead):
-    created_at: datetime
-    
+class LeadList(LeadCreateUpdate):
+    id: int
+    created_at: date   
 
 class POC(BaseModel):
     lead_id: int
@@ -50,6 +50,8 @@ class POC(BaseModel):
     class config:
         from_attributes = True
 
+class POCList(POC):
+    id: int
 
 class CallBase(BaseModel):
     lead_id: int

@@ -1,7 +1,7 @@
 "Model Configuration Module for Postgres DB"
 
 from datetime import datetime
-from sqlalchemy import Column, Integer, String, ForeignKey, DateTime
+from sqlalchemy import Column, Integer, String, ForeignKey, Date, DateTime
 from sqlalchemy.orm import relationship
 from ..configs.database.postgres_db import Base
 
@@ -55,7 +55,7 @@ class LeadModel(Base):
     timezone = Column(String, nullable=False, default='Asia/Kolkata')
     area_of_interest = Column(String, nullable=False)
     status = Column(String, default='new')
-    created_at = Column(DateTime, default=datetime.now())
+    created_at = Column(Date, default=datetime.now().date())
 
     contacts = relationship("PointOfContactModel", back_populates="lead")
     calls = relationship("CallModel", back_populates="lead")

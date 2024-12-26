@@ -4,7 +4,7 @@ from sqlalchemy.orm import Session
 from sqlalchemy.exc import SQLAlchemyError
 from ..models.postgres_models import LeadModel, PointOfContactModel
 from ..configs.database.postgres_db import get_postgres_db
-from ..schemas.schemas import POC
+from ..schemas.schemas import POC, POCList
 from ..utils.utils import has_permission
 
 router = APIRouter()
@@ -32,15 +32,15 @@ async def add_poc(lead_id: int, poc: POC, db: Session = Depends(get_postgres_db)
 
 
 @router.get('/poc/all', response_model=List[POC])
-async def get_all_pocs(db: Session = Depends(get_postgres_db)):
+async def get_all_pocs(db: Session = Depends(get_postgres_db), permissions: bool = has_permission(["sales", 'admin'])):
     try:
         return db.query(PointOfContactModel).all()
     except SQLAlchemyError as e:
         raise HTTPException(status_code=500, detail=f"Database error: {e}")
 
 
-@router.get('/{lead_id}/pocs', response_model=List[POC])
-async def get_pocs(lead_id: int, db: Session = Depends(get_postgres_db), permissions: bool = has_permission(["sales"])):
+@router.get('/{lead_id}/pocs', response_model=List[POCList])
+async def get_pocs(lead_id: int, db: Session = Depends(get_postgres_db), permissions: bool = has_permission(["sales", 'admin'])):
     try:
         db_lead = db.query(LeadModel).filter(LeadModel.id == lead_id).first()
         if not db_lead:

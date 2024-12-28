@@ -2,103 +2,258 @@
 
 import { useState, useEffect } from 'react'
 import { useAuth } from '@/hooks/useAuth'
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog"
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
+import { Card } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog'
 import { Label } from '@/components/ui/label'
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
+import { Input } from '@/components/ui/input'
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import { FaTrash, FaEdit, FaPhone } from 'react-icons/fa';
 
 interface Lead {
   id: string
   name: string
 }
 
+
 interface Call {
   id: string
-  leadId: string
-  leadName: string
-  contact: string
-  date: string
-  time: string
+  lead_id: string
+  lead_name: string
+  poc_name: string
+  poc_contact: string
+  next_call_date: string
+  next_call_time: string
   notes: string
+  frequency: string
+  log: string
+}
+
+const BASE_URL = 'http://127.0.0.1:8000/api/lead'
+
+const fetchLeads = async (token: string) => {
+  const response = await fetch(`${BASE_URL}`, {
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+  })
+  if (!response.ok) {
+    throw new Error('Failed to fetch leads')
+  }
+  return response.json()
+}
+
+const fetchPointOfContacts = async (token: string, lead_id: string) => {
+  const response = await fetch(`${BASE_URL}/${lead_id}/pocs`, {
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+  })
+  if (!response.ok) {
+    throw new Error('Failed to fetch leads')
+  }
+  return response.json()
+}
+
+const fetchCalls = async (token: string) => {
+  const response = await fetch(`${BASE_URL}/calls/today`, {
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+  })
+  if (!response.ok) {
+    throw new Error('Failed to fetch calls')
+  }
+  
+  return response.json()
+}
+
+const addCall = async (newCall: Omit<Call, 'id'>, token: string) => {
+  const response = await fetch(`${BASE_URL}/${newCall.lead_id}/call`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: `Bearer ${token}`,
+    },
+    body: JSON.stringify(newCall),
+  })
+  if (!response.ok) {
+    throw new Error('Failed to add call')
+  }
+  return response.json()
+}
+
+const deleteCall = async (leadId: string, callId: string, token: string) => {
+  const response = await fetch(`${BASE_URL}/${leadId}/call/${callId}`, {
+    method: 'DELETE',
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+  })
+  if (!response.ok) {
+    throw new Error('Failed to delete call')
+  }
+}
+
+const updateCallFrequency = async (leadId: string, callId: string, frequency: string, token: string) => {
+  const response = await fetch(`${BASE_URL}/${leadId}/call/${callId}/frequency`, {
+    method: 'PUT',
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: `Bearer ${token}`,
+    },
+    body: JSON.stringify({ frequency }),
+  })
+  if (!response.ok) {
+    throw new Error('Failed to update call frequency')
+  }
+  return response.json()
+}
+
+const updateCallLog = async (leadId: string, callId: string, token: string) => {
+  const response = await fetch(`${BASE_URL}/${leadId}/call/${callId}/log`, {
+    method: 'PUT',
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: `Bearer ${token}`,
+    },
+  });
+  if (!response.ok) {
+    throw new Error('Failed to update call log')
+  }
+  return response.json()
 }
 
 export default function CallPlanning() {
   const { user, loading } = useAuth('admin')
   const [calls, setCalls] = useState<Call[]>([])
   const [leads, setLeads] = useState<Lead[]>([])
-  const [newCall, setNewCall] = useState<Omit<Call, 'id' | 'leadName'>>({ leadId: '', contact: '', date: '', time: '', notes: '' })
+  const [pointOfContacts, setPointOfContacts] = useState<Lead[]>([])
+  const [newCall, setNewCall] = useState<Omit<Call, 'id'>>({ lead_id: '', lead_name: '', poc_contact: '', poc_name: '', next_call_date: '', next_call_time: '', notes: '', frequency: '', log: '' })
   const [isAddModalOpen, setIsAddModalOpen] = useState(false)
-  const [isEditModalOpen, setIsEditModalOpen] = useState(false)
-  const [editingCall, setEditingCall] = useState<Call | null>(null)
+  const [isUpdateModalOpen, setIsUpdateModalOpen] = useState(false);
+  const [selectedCall, setSelectedCall] = useState<Call | null>(null);
+  const [updateFrequency, setUpdateFrequency] = useState('');
+  // const [updateDate, setUpdateDate] = useState('');
+  // const [updateTime, setUpdateTime] = useState('');
+
+  const token = localStorage.getItem('token')
 
   useEffect(() => {
-    // Fetch calls and leads from API
-    fetchCalls()
-    fetchLeads()
-  }, [])
+    if (token) {
+      const fetchData = async () => {
+        const leadsData = await fetchLeads(token)
+        setLeads(leadsData)
+        const callsData = await fetchCalls(token)
+        setCalls(callsData)
+      }
+      fetchData()
+    }
+  }, [token])
 
-  const fetchCalls = async () => {
-    // In a real app, this would be an API call
-    const mockCalls: Call[] = [
-      { id: '1', leadId: '1', leadName: 'Restaurant A', contact: 'John Doe', date: '2023-06-01', time: '10:00', notes: 'Follow up on last order' },
-      { id: '2', leadId: '2', leadName: 'Restaurant B', contact: 'Jane Smith', date: '2023-06-02', time: '14:00', notes: 'Introduce new products' },
-    ]
-    setCalls(mockCalls)
-  }
+  useEffect(() => {
+    if (token && newCall.lead_id) {
+      const fetchPOCs = async () => {
+        const pointOfContactsData = await fetchPointOfContacts(token, newCall.lead_id);
+        setPointOfContacts(pointOfContactsData);
+      };
+      fetchPOCs();
+    }
+  }, [newCall.lead_id, token]);
 
-  const fetchLeads = async () => {
-    // In a real app, this would be an API call
-    const mockLeads: Lead[] = [
-      { id: '1', name: 'Restaurant A' },
-      { id: '2', name: 'Restaurant B' },
-      { id: '3', name: 'Restaurant C' },
-    ]
-    setLeads(mockLeads)
-  }
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setNewCall({ ...newCall, [e.target.name]: e.target.value })
-  }
+    const { name, value } = e.target;
+    setNewCall((prevCall) => ({
+      ...prevCall,
+      [name]: value,
+    }));
+  };
+
 
   const handleSelectChange = (name: string, value: string) => {
-    setNewCall({ ...newCall, [name]: value })
-  }
+    setNewCall((prevCall) => ({
+      ...prevCall,
+      [name]: value,
+    }));
+  };
+
+
+  const openUpdateModal = (call: Call) => {
+    setSelectedCall(call);
+    setUpdateFrequency(call.frequency);
+    // setUpdateDate(call.next_call_date);
+    // setUpdateTime(call.next_call_time);
+    setIsUpdateModalOpen(true);
+  };
+
+  const handleUpdateFrequencyChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setUpdateFrequency(e.target.value);
+  };
+
+  // const handleUpdateDateChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  //   setUpdateDate(e.target.value);
+  // };
+
+  // const handleUpdateTimeChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  //   setUpdateTime(e.target.value);
+  // };
 
   const handleAddCall = async () => {
-    // In a real app, this would be an API call
-    const addedCall: Call = {
-      id: String(calls.length + 1),
-      leadName: leads.find(lead => lead.id === newCall.leadId)?.name || '',
-      ...newCall
-    }
-    setCalls([...calls, addedCall])
-    setNewCall({ leadId: '', contact: '', date: '', time: '', notes: '' })
-    setIsAddModalOpen(false)
-  }
-
-  const handleEditCall = (call: Call) => {
-    setEditingCall(call)
-    setIsEditModalOpen(true)
-  }
-
-  const handleUpdateCall = async () => {
-    if (editingCall) {
-      // In a real app, this would be an API call
-      const updatedCalls = calls.map(call => 
-        call.id === editingCall.id ? editingCall : call
-      )
-      setCalls(updatedCalls)
-      setIsEditModalOpen(false)
-      setEditingCall(null)
+    if (token) {
+      try {
+        const addedCall = await addCall(newCall, token)
+        setCalls((prevCalls) => [...prevCalls, addedCall]);
+        setIsAddModalOpen(false);
+      } catch (error) {
+        console.error('Error adding call:', error)
+      }
     }
   }
 
-  const handleDeleteCall = async (id: string) => {
-    // In a real app, this would be an API call
-    const updatedCalls = calls.filter(call => call.id !== id)
-    setCalls(updatedCalls)
+  const handleDeleteCall = async (leadId: string, callId: string) => {
+    if (token) {
+      try {
+        await deleteCall(leadId, callId, token)
+        const updatedCalls = calls.filter(call => call.id !== callId)
+        setCalls(updatedCalls)
+      } catch (error) {
+        console.error('Error deleting call:', error)
+      }
+    }
+  }
+
+  const handleUpdateCallFrequency = async () => {
+    if (token && selectedCall) {
+      try {
+        const updatedCall = await updateCallFrequency(selectedCall.lead_id, selectedCall.id, updateFrequency, token)
+        const [next_call_date, next_call_time] = updatedCall.next_call_date.split('T');
+        setCalls((prevCalls) =>
+          prevCalls.map((call) =>
+            call.id === selectedCall.id ? { ...call, frequency: updatedCall.frequency, next_call_date, next_call_time } : call
+          )
+        );
+        setIsUpdateModalOpen(false);
+      } catch (error) {
+        console.error('Error updating call frequency:', error)
+      }
+    }
+  }
+
+  const handleUpdateCallLog = async (leadId: string, callId: string) => {
+    if (token) {
+      try {
+        const updatedCall = await updateCallLog(leadId, callId, token)
+        setCalls((prevCalls) =>
+          prevCalls.map((call) =>
+            call.id === callId ? { ...call, last_call_date: updatedCall.last_call_date, next_call_date: updatedCall.next_call_date } : call
+          )
+        );
+      } catch (error) {
+        console.error('Error updating call log:', error)
+      }
+    }
   }
 
   if (loading) {
@@ -119,8 +274,8 @@ export default function CallPlanning() {
             </DialogHeader>
             <div className="grid gap-4 py-4">
               <div className="grid grid-cols-4 items-center gap-4">
-                <Label htmlFor="leadId" className="text-right">Lead</Label>
-                <Select onValueChange={(value) => handleSelectChange('leadId', value)}>
+                <Label htmlFor="lead_id" className="text-right">Lead</Label>
+                <Select onValueChange={(value) => handleSelectChange('lead_id', value)}>
                   <SelectTrigger className="col-span-3">
                     <SelectValue placeholder="Select lead" />
                   </SelectTrigger>
@@ -131,96 +286,84 @@ export default function CallPlanning() {
                   </SelectContent>
                 </Select>
               </div>
-              <div className="grid grid-cols-4 items-center gap-4">
+              {/* <div className="grid grid-cols-4 items-center gap-4">
                 <Label htmlFor="contact" className="text-right">Contact</Label>
-                <Input id="contact" name="contact" value={newCall.contact} onChange={handleInputChange} className="col-span-3" />
+                <Input id="contact" name="contact" value={newCall.poc_contact} onChange={handleInputChange} className="col-span-3" />
+              </div> */}
+              <div className="grid grid-cols-4 items-center gap-4">
+                <Label htmlFor="pocId" className="text-right">Point of Contact</Label>
+                <Select onValueChange={(value) => handleSelectChange('poc_id', value)}>
+                  <SelectTrigger className="col-span-3">
+                    <SelectValue placeholder="Select point of contact" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {pointOfContacts.map((poc) => (
+                      <SelectItem key={poc.id} value={poc.id}>{poc.name}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
               </div>
               <div className="grid grid-cols-4 items-center gap-4">
-                <Label htmlFor="date" className="text-right">Date</Label>
-                <Input id="date" name="date" type="date" value={newCall.date} onChange={handleInputChange} className="col-span-3" />
+                <Label htmlFor="next_call_date" className="text-right">Date</Label>
+                <Input id="next_call_date" name="next_call_date" type="date" value={newCall.next_call_date} onChange={handleInputChange} className="col-span-3" />
               </div>
               <div className="grid grid-cols-4 items-center gap-4">
-                <Label htmlFor="time" className="text-right">Time</Label>
-                <Input id="time" name="time" type="time" value={newCall.time} onChange={handleInputChange} className="col-span-3" />
+                <Label htmlFor="next_call_time" className="text-right">Time</Label>
+                <Input id="next_call_time" name="next_call_time" type="time" value={newCall.next_call_time} onChange={handleInputChange} className="col-span-3" />
               </div>
               <div className="grid grid-cols-4 items-center gap-4">
-                <Label htmlFor="notes" className="text-right">Notes</Label>
-                <Input id="notes" name="notes" value={newCall.notes} onChange={handleInputChange} className="col-span-3" />
+                <Label htmlFor="frequency" className="text-right">Frequency</Label>
+                <Input id="frequency" name="frequency" value={newCall.frequency} onChange={handleInputChange} className="col-span-3" />
               </div>
             </div>
             <Button onClick={handleAddCall}>Add Call</Button>
           </DialogContent>
         </Dialog>
+        <Dialog open={isUpdateModalOpen} onOpenChange={setIsUpdateModalOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Update Call Frequency</DialogTitle>
+          </DialogHeader>
+          <div className="grid gap-4 py-4">
+            <div className="grid grid-cols-4 items-center gap-4">
+              <Label htmlFor="updateFrequency" className="text-right">Frequency</Label>
+              <Input id="updateFrequency" name="updateFrequency" type="number" value={updateFrequency} onChange={handleUpdateFrequencyChange} className="col-span-3" />
+            </div>
+          </div>
+          <Button onClick={handleUpdateCallFrequency}>Update Call</Button>
+        </DialogContent>
+      </Dialog>
       </div>
       <Table>
         <TableHeader>
           <TableRow>
             <TableHead>Lead</TableHead>
+            <TableHead>Point of Contact</TableHead>
             <TableHead>Contact</TableHead>
-            <TableHead>Date</TableHead>
-            <TableHead>Time</TableHead>
-            <TableHead>Notes</TableHead>
+            <TableHead>Next Call Date</TableHead>
+            <TableHead>Next Call Time</TableHead>
+            <TableHead>Frequency</TableHead>
             <TableHead>Actions</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
           {calls.map((call) => (
             <TableRow key={call.id}>
-              <TableCell>{call.leadName}</TableCell>
-              <TableCell>{call.contact}</TableCell>
-              <TableCell>{call.date}</TableCell>
-              <TableCell>{call.time}</TableCell>
-              <TableCell>{call.notes}</TableCell>
+              <TableCell>{call.lead_name}</TableCell>
+              <TableCell>{call.poc_name}</TableCell>
+              <TableCell>{call.poc_contact}</TableCell>
+              <TableCell>{call.next_call_date}</TableCell>
+              <TableCell>{call.next_call_time}</TableCell>
+              <TableCell>{call.frequency}</TableCell>
               <TableCell>
-                <Button variant="outline" size="sm" className="mr-2" onClick={() => handleEditCall(call)}>Edit</Button>
-                <Button variant="destructive" size="sm" onClick={() => handleDeleteCall(call.id)}>Delete</Button>
+                <Button variant="destructive" size="sm" onClick={() => handleDeleteCall(call.lead_id, call.id)} style={{ marginRight: '8px' }}><FaTrash /></Button>
+                <Button size="sm" onClick={() => openUpdateModal(call)} style={{marginRight: '8px'}}><FaEdit /></Button>
+                <Button size="sm" onClick={() => handleUpdateCallLog(call.lead_id, call.id)} style={{ marginRight: '8px' }} ><FaPhone /></Button>
               </TableCell>
             </TableRow>
           ))}
         </TableBody>
       </Table>
-      <Dialog open={isEditModalOpen} onOpenChange={setIsEditModalOpen}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>Edit Call</DialogTitle>
-          </DialogHeader>
-          {editingCall && (
-            <div className="grid gap-4 py-4">
-              <div className="grid grid-cols-4 items-center gap-4">
-                <Label htmlFor="editLeadId" className="text-right">Lead</Label>
-                <Select onValueChange={(value) => setEditingCall({ ...editingCall, leadId: value, leadName: leads.find(lead => lead.id === value)?.name || '' })}>
-                  <SelectTrigger className="col-span-3">
-                    <SelectValue placeholder={editingCall.leadName} />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {leads.map((lead) => (
-                      <SelectItem key={lead.id} value={lead.id}>{lead.name}</SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-              <div className="grid grid-cols-4 items-center gap-4">
-                <Label htmlFor="editContact" className="text-right">Contact</Label>
-                <Input id="editContact" name="contact" value={editingCall.contact} onChange={(e) => setEditingCall({ ...editingCall, contact: e.target.value })} className="col-span-3" />
-              </div>
-              <div className="grid grid-cols-4 items-center gap-4">
-                <Label htmlFor="editDate" className="text-right">Date</Label>
-                <Input id="editDate" name="date" type="date" value={editingCall.date} onChange={(e) => setEditingCall({ ...editingCall, date: e.target.value })} className="col-span-3" />
-              </div>
-              <div className="grid grid-cols-4 items-center gap-4">
-                <Label htmlFor="editTime" className="text-right">Time</Label>
-                <Input id="editTime" name="time" type="time" value={editingCall.time} onChange={(e) => setEditingCall({ ...editingCall, time: e.target.value })} className="col-span-3" />
-              </div>
-              <div className="grid grid-cols-4 items-center gap-4">
-                <Label htmlFor="editNotes" className="text-right">Notes</Label>
-                <Input id="editNotes" name="notes" value={editingCall.notes} onChange={(e) => setEditingCall({ ...editingCall, notes: e.target.value })} className="col-span-3" />
-              </div>
-            </div>
-          )}
-          <Button onClick={handleUpdateCall}>Update Call</Button>
-        </DialogContent>
-      </Dialog>
     </div>
   )
 }
-

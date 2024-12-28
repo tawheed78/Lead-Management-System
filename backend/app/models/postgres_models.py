@@ -84,6 +84,7 @@ class PointOfContactModel(Base):
     phone_number = Column(String, nullable=False)
 
     lead = relationship("LeadModel", back_populates="contacts")
+    calls = relationship("CallModel", back_populates="poc")
 
 
 class CallModel(Base):
@@ -101,9 +102,14 @@ class CallModel(Base):
 
     __tablename__ = "calls_tracking"
     id = Column(Integer, primary_key=True, index=True)
+    poc_id = Column(Integer, ForeignKey("point_of_contacts.id"))
     lead_id = Column(Integer, ForeignKey("leads.id"))
+    
     frequency = Column(Integer)
     last_call_date = Column(DateTime, default=None, nullable=True)
     next_call_date = Column(DateTime, default=None, nullable=True)
+    
 
     lead = relationship("LeadModel", back_populates="calls")
+
+    poc = relationship("PointOfContactModel", back_populates="calls")

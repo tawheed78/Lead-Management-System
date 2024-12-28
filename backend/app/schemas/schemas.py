@@ -1,7 +1,7 @@
 from enum import Enum
 from typing import Optional
 from pydantic import BaseModel
-from datetime import datetime, date
+from datetime import datetime, date, time
 
 class Role(str, Enum):
     ADMIN = 'admin'
@@ -55,12 +55,13 @@ class POCList(POC):
 
 class CallBase(BaseModel):
     lead_id: int
-    frequency: int
 
     class Config:
         from_attributes = True
 
 class CallCreate(CallBase):
+    poc_id: int
+    frequency: int
     next_call_date: Optional[datetime]
 
 class CallUpdateFrequency(BaseModel):
@@ -69,5 +70,9 @@ class CallUpdateFrequency(BaseModel):
 class CallToday(BaseModel):
     lead_id: int
     lead_name: str
-
+    poc_id: int
+    poc_name: str
+    poc_contact: int
+    next_call_date: str
+    next_call_time: str
 

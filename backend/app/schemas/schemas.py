@@ -54,6 +54,7 @@ class POCList(POC):
     id: int
 
 class CallBase(BaseModel):
+
     lead_id: int
 
     class Config:
@@ -62,17 +63,17 @@ class CallBase(BaseModel):
 class CallCreate(CallBase):
     poc_id: int
     frequency: int
-    next_call_date: Optional[datetime]
+    next_call_date: date
+    next_call_time: time
 
 class CallUpdateFrequency(BaseModel):
     frequency: int
 
-class CallToday(BaseModel):
-    lead_id: int
+class CallTodayResponse(CallCreate):
+    id: int
     lead_name: str
-    poc_id: int
     poc_name: str
     poc_contact: int
-    next_call_date: str
-    next_call_time: str
+    
+    
 

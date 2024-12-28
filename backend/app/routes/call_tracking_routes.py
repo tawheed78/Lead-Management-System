@@ -6,10 +6,10 @@ from fastapi.responses import JSONResponse, RedirectResponse
 from sqlalchemy.orm import Session, joinedload
 import pytz # type: ignore
 from ..utils.utils import convert_to_ist, has_permission
-
+from sqlalchemy.exc import SQLAlchemyError
 from ..models.postgres_models import LeadModel, CallModel, PointOfContactModel
 from ..configs.database.postgres_db import get_postgres_db
-from ..schemas.schemas import CallCreate, CallUpdateFrequency, CallToday
+from ..schemas.schemas import CallCreate, CallUpdateFrequency, CallTodayResponse
 
 router = APIRouter()
 
@@ -75,7 +75,7 @@ async def update_call_log(lead_id:int, call_id:int, db: Session = Depends(get_po
     return db_call
 
 
-@router.get('/calls/today', response_model=List[CallToday])
+@router.get('/calls/today', response_model=List[CallTodayResponse])
 async def calls_today(db: Session = Depends(get_postgres_db), permissions: bool = has_permission(["sales", 'viewer', 'admin'])):
     today = datetime.now()
     calls = (
@@ -88,7 +88,8 @@ async def calls_today(db: Session = Depends(get_postgres_db), permissions: bool 
     for call in calls:
         next_call_date = call.next_call_date.strftime('%Y-%m-%d') if call.next_call_date else None
         next_call_time = call.next_call_date.strftime('%H:%M:%S') if call.next_call_date else None
-        result.append(CallToday(
+        result.append(CallTodayResponse(
+            id = call.id,
             lead_id=call.lead_id,
             poc_id=call.poc_id,
             lead_name=call.lead.name,
@@ -101,3 +102,18 @@ async def calls_today(db: Session = Depends(get_postgres_db), permissions: bool 
         ))
     
     return result
+
+
+@router.delete('/{lead_id}/call/{call_id}')
+async def delete_call(call_id: int, db: Session = Depends(get_postgres_db), permissions: bool = has_permission(["sales", 'viewer', 'admin'])):
+    try:
+        db_call = db.query(CallModel).filter(CallModel.id == call_id).first()
+        if not db_call:
+            raise HTTPException(status_code=404, detail="Call not found")
+        db.delete(db_call)
+        db.commit()
+        db.refresh
+        return {"message": "Lead deleted successfully"}
+    except SQLAlchemyError as e:
+        db.rollback()
+        raise HTTPException(status_code=500, detail=f"Database error: {e}")

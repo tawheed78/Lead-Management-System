@@ -9,7 +9,7 @@ from ..utils.utils import convert_to_ist, has_permission
 from sqlalchemy.exc import SQLAlchemyError
 from ..models.postgres_models import LeadModel, CallModel, PointOfContactModel
 from ..configs.database.postgres_db import get_postgres_db
-from ..schemas.schemas import CallCreate, CallUpdateFrequency, CallTodayResponse
+from ..schemas.schemas import CallCreate, CallUpdate, CallTodayResponse
 
 router = APIRouter()
 
@@ -30,19 +30,21 @@ async def add_call(
     
     lead_timezone = db_lead.timezone
     # Handle time localization and conversion
-    call_time = call.next_call_date
+    call_datetime = f'{call.next_call_date} {call.next_call_time}'
     if lead_timezone != "Asia/Kolkata":
-        call_time = convert_to_ist(call_time, lead_timezone)
+        call_datetime = convert_to_ist(call_datetime, lead_timezone)
         # Check if time is in the past, adjust if necessary
-        if call_time < datetime.now():
-            call_time += timedelta(days=1)
-    next_call_date = call_time
-    
+        if call_datetime < datetime.now():
+            call_datetime += timedelta(days=1)
+    next_call_date = call_datetime.date()
+    next_call_time = call_datetime.time()
+
     db_call = CallModel(
         poc_id=call.poc_id,
         frequency=call.frequency,
         last_call_date=None,
         next_call_date=next_call_date,
+        next_call_time = next_call_time,
         lead_id=lead_id,
     )
     db.add(db_call)
@@ -51,8 +53,8 @@ async def add_call(
     return db_call
 
 
-@router.put('/{lead_id}/call/{call_id}/frequency', response_model=CallCreate)
-async def update_call_frequency(lead_id: int, call_id: int, call: CallUpdateFrequency, db: Session = Depends(get_postgres_db), permissions: bool = has_permission(["sales"])):
+@router.put('/{lead_id}/call/{call_id}/frequency')
+async def update_call_frequency(lead_id: int, call_id: int, call: CallUpdate, db: Session = Depends(get_postgres_db), permissions: bool = has_permission(["sales", "admin"])):
     db_call = db.query(CallModel).filter(CallModel.id == call_id, CallModel.lead_id == lead_id).first()
     if not db_call:
         raise HTTPException(status_code=404, detail="Call not found")
@@ -64,12 +66,15 @@ async def update_call_frequency(lead_id: int, call_id: int, call: CallUpdateFreq
 
 
 @router.put('/{lead_id}/call/{call_id}/log', response_model=CallCreate)
-async def update_call_log(lead_id:int, call_id:int, db: Session = Depends(get_postgres_db), permissions: bool = has_permission(["sales"])):
+async def update_call_log(lead_id:int, call_id:int, db: Session = Depends(get_postgres_db), permissions: bool = has_permission(["sales", "admin"])):
     db_call = db.query(CallModel).filter(CallModel.id == call_id, CallModel.lead_id == lead_id).first()
     if not db_call:
         raise HTTPException(status_code=404, detail="Call not found")
     db_call.last_call_date = datetime.now()
     db_call.next_call_date = datetime.now().date() + timedelta(days=db_call.frequency)
+    next_call_date = db_call.next_call_date.strftime('%Y-%m-%d') if db_call.next_call_date else None
+    next_call_time = db_call.next_call_date.strftime('%H:%M:%S') if db_call.next_call_date else None
+    # 
     db.commit()
     db.refresh(db_call)
     return db_call
@@ -86,8 +91,8 @@ async def calls_today(db: Session = Depends(get_postgres_db), permissions: bool 
     )
     result = []
     for call in calls:
-        next_call_date = call.next_call_date.strftime('%Y-%m-%d') if call.next_call_date else None
-        next_call_time = call.next_call_date.strftime('%H:%M:%S') if call.next_call_date else None
+        # next_call_date = call.next_call_date.strftime('%Y-%m-%d') if call.next_call_date else None
+        # next_call_time = call.next_call_date.strftime('%H:%M:%S') if call.next_call_date else None
         result.append(CallTodayResponse(
             id = call.id,
             lead_id=call.lead_id,
@@ -96,9 +101,8 @@ async def calls_today(db: Session = Depends(get_postgres_db), permissions: bool 
             poc_name=call.poc.name,
             frequency=call.frequency,
             poc_contact=call.poc.phone_number,
-            next_call_date= next_call_date,
-            next_call_time=next_call_time
-
+            next_call_date= call.next_call_date,
+            next_call_time= call.next_call_time
         ))
     
     return result

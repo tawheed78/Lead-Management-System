@@ -1,7 +1,7 @@
 "Model Configuration Module for Postgres DB"
 
 from datetime import datetime
-from sqlalchemy import Column, Integer, String, ForeignKey, Date, DateTime
+from sqlalchemy import Column, Integer, String, ForeignKey, Date, DateTime, Time
 from sqlalchemy.orm import relationship
 from ..configs.database.postgres_db import Base
 
@@ -107,9 +107,8 @@ class CallModel(Base):
     
     frequency = Column(Integer)
     last_call_date = Column(DateTime, default=None, nullable=True)
-    next_call_date = Column(DateTime, default=None, nullable=True)
-    
+    next_call_date = Column(Date, default=None, nullable=True)
+    next_call_time = Column(Time, default=None, nullable=False)
 
     lead = relationship("LeadModel", back_populates="calls")
-
     poc = relationship("PointOfContactModel", back_populates="calls")

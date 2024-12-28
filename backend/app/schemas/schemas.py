@@ -34,7 +34,7 @@ class LeadCreateUpdate(Lead):
     zipcode: str
     state : str
     country : str
-    timezone : str = 'Asia/Kolkata'
+    timezone : str
     area_of_interest : str
 
 class LeadList(LeadCreateUpdate):
@@ -66,8 +66,10 @@ class CallCreate(CallBase):
     next_call_date: date
     next_call_time: time
 
-class CallUpdateFrequency(BaseModel):
+class CallUpdate(BaseModel):
     frequency: int
+    # next_call_date: date
+    # next_call_time: time
 
 class CallTodayResponse(CallCreate):
     id: int

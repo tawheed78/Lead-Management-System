@@ -15,12 +15,12 @@ import {
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { fetchDashboardData } from '@/services/dashboardService'
 // Mock data for today's calls
-const todaysCalls = [
-  { id: 1, restaurant: "Joe's Diner", contact: "Joe Smith", time: "10:00 AM" },
-  { id: 2, restaurant: "Pizza Palace", contact: "Maria Garcia", time: "11:30 AM" },
-  { id: 3, restaurant: "Sushi Spot", contact: "Yuki Tanaka", time: "2:00 PM" },
-  { id: 4, restaurant: "Burger Barn", contact: "Bob Johnson", time: "3:30 PM" },
-]
+// const todaysCalls = [
+//   { id: 1, restaurant: "Joe's Diner", contact: "Joe Smith", time: "10:00 AM" },
+//   { id: 2, restaurant: "Pizza Palace", contact: "Maria Garcia", time: "11:30 AM" },
+//   { id: 3, restaurant: "Sushi Spot", contact: "Yuki Tanaka", time: "2:00 PM" },
+//   { id: 4, restaurant: "Burger Barn", contact: "Bob Johnson", time: "3:30 PM" },
+// ]
 
 
 
@@ -40,7 +40,7 @@ export default function Dashboard() {
           const data = await fetchDashboardData(token)
           console.log('Dashboard data:', data)
           setTotalLeads(data.totalLeads)
-          // setActiveLeads(data.activeLeads)
+          setActiveLeads(data.activeLeads)
           setTodaysCalls(data.todaysCalls)
         }
       } catch (error) {
@@ -67,7 +67,7 @@ export default function Dashboard() {
         <Card>
           <div className="p-4">
             <h3 className="font-semibold text-lg mb-2">Active Leads</h3>
-            <p className="text-3xl font-bold">180</p>
+            <p className="text-3xl font-bold">{activeLeads}</p>
           </div>
         </Card>
         <Dialog open={isCallsModalOpen} onOpenChange={setIsCallsModalOpen}>

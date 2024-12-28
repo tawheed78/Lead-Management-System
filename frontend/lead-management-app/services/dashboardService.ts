@@ -1,3 +1,9 @@
+interface Lead {
+  id: string
+  name: string
+  status: string
+}
+
 export async function fetchDashboardData(token: string) {
     try {
         const leadsResponse = await fetch('http://127.0.0.1:8000/api/lead', {
@@ -5,7 +11,7 @@ export async function fetchDashboardData(token: string) {
             Authorization: `Bearer ${token}`,
             },
         })
-        const callsResponse = await fetch('http://127.0.0.1:8000/api/calls/today', {
+        const callsResponse = await fetch('http://127.0.0.1:8000/api/lead/calls/today', {
             headers: {
             Authorization: `Bearer ${token}`,
             },
@@ -14,9 +20,10 @@ export async function fetchDashboardData(token: string) {
       if (leadsResponse.ok && callsResponse.ok) {
         const leadsData = await leadsResponse.json()
         const callsData = await callsResponse.json()
+        const activeLeadsData = leadsData.filter((lead:Lead) => lead.status !== 'Inactive')
         return {
           totalLeads: leadsData.length,
-          activeLeads: leadsData.activeLeads,
+          activeLeads: activeLeadsData.length,
           todaysCalls: callsData.length,
         }
       } else {

@@ -31,7 +31,7 @@ export default function Interactions() {
   const [isAddModalOpen, setIsAddModalOpen] = useState(false)
   const [isEditModalOpen, setIsEditModalOpen] = useState(false)
   const [editingInteraction, setEditingInteraction] = useState<Interaction | null>(null)
-  const [filterLead, setFilterLead] = useState<string>('')
+  const [filterLead, setFilterLead] = useState<string>('all')
 
   useEffect(() => {
     // Fetch interactions and leads from API
@@ -101,9 +101,9 @@ export default function Interactions() {
     setInteractions(updatedInteractions)
   }
 
-  const filteredInteractions = filterLead
-    ? interactions.filter(interaction => interaction.leadId === filterLead)
-    : interactions
+  const filteredInteractions = filterLead === 'all' || filterLead === ''
+    ? interactions
+    : interactions.filter(interaction => interaction.leadId === filterLead)
 
   if (loading) {
     return <div>Loading...</div>
@@ -142,9 +142,9 @@ export default function Interactions() {
                     <SelectValue placeholder="Select type" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="Call">Call</SelectItem>
-                    <SelectItem value="Email">Email</SelectItem>
-                    <SelectItem value="Meeting">Meeting</SelectItem>
+                    <SelectItem value="call">Call</SelectItem>
+                    <SelectItem value="email">Email</SelectItem>
+                    <SelectItem value="meeting">Meeting</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
@@ -167,7 +167,7 @@ export default function Interactions() {
             <SelectValue placeholder="Filter by lead" />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="">All Leads</SelectItem>
+            <SelectItem value="all">All Leads</SelectItem>
             {leads.map((lead) => (
               <SelectItem key={lead.id} value={lead.id}>{lead.name}</SelectItem>
             ))}
@@ -226,9 +226,9 @@ export default function Interactions() {
                     <SelectValue placeholder={editingInteraction.type} />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="Call">Call</SelectItem>
-                    <SelectItem value="Email">Email</SelectItem>
-                    <SelectItem value="Meeting">Meeting</SelectItem>
+                    <SelectItem value="call">Call</SelectItem>
+                    <SelectItem value="email">Email</SelectItem>
+                    <SelectItem value="meeting">Meeting</SelectItem>
                   </SelectContent>
                 </Select>
               </div>

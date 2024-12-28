@@ -36,6 +36,7 @@ async def add_call(
         # Check if time is in the past, adjust if necessary
         if call_datetime < datetime.now():
             call_datetime += timedelta(days=1)
+    call_datetime = datetime.strptime(call_datetime, '%Y-%m-%d %H:%M:%S')
     next_call_date = call_datetime.date()
     next_call_time = call_datetime.time()
 
@@ -72,9 +73,7 @@ async def update_call_log(lead_id:int, call_id:int, db: Session = Depends(get_po
         raise HTTPException(status_code=404, detail="Call not found")
     db_call.last_call_date = datetime.now()
     db_call.next_call_date = datetime.now().date() + timedelta(days=db_call.frequency)
-    next_call_date = db_call.next_call_date.strftime('%Y-%m-%d') if db_call.next_call_date else None
-    next_call_time = db_call.next_call_date.strftime('%H:%M:%S') if db_call.next_call_date else None
-    # 
+
     db.commit()
     db.refresh(db_call)
     return db_call
@@ -82,7 +81,8 @@ async def update_call_log(lead_id:int, call_id:int, db: Session = Depends(get_po
 
 @router.get('/calls/today', response_model=List[CallTodayResponse])
 async def calls_today(db: Session = Depends(get_postgres_db), permissions: bool = has_permission(["sales", 'viewer', 'admin'])):
-    today = datetime.now()
+    # today = datetime.now()
+    today = datetime.now().replace(hour=0, minute=0, second=0, microsecond=0)
     calls = (
         db.query(CallModel)
         .options(joinedload(CallModel.lead), joinedload(CallModel.poc))
@@ -91,8 +91,6 @@ async def calls_today(db: Session = Depends(get_postgres_db), permissions: bool 
     )
     result = []
     for call in calls:
-        # next_call_date = call.next_call_date.strftime('%Y-%m-%d') if call.next_call_date else None
-        # next_call_time = call.next_call_date.strftime('%H:%M:%S') if call.next_call_date else None
         result.append(CallTodayResponse(
             id = call.id,
             lead_id=call.lead_id,

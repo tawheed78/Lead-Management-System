@@ -62,16 +62,6 @@ def has_permission(required_roles: List[str]):
         return True
     return Depends(permission_dependency)
 
-# def convert_to_ist(call_time: datetime, lead_timezone: str):
-#     # Lead's local timezone
-#     local_tz = pytz.timezone(lead_timezone)
-#     local_time = local_tz.localize(call_time)
-#     # Convert to IST
-#     ist_tz = pytz.timezone("Asia/Kolkata")
-#     ist_time = local_time.astimezone(ist_tz)
-#     #Removing timezone info
-#     naive_ist_time = ist_time.replace(tzinfo=None)
-#     return naive_ist_time
 
 def convert_to_ist(call_time, lead_timezone):
     call_time = datetime.strptime(call_time, "%Y-%m-%d %H:%M:%S")
@@ -84,3 +74,4 @@ def convert_to_ist(call_time, lead_timezone):
     #Removing timezone info
     naive_ist_time = ist_time.replace(tzinfo=None)
     return naive_ist_time
+    

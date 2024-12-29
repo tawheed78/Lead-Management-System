@@ -20,7 +20,8 @@ async def create_lead(lead: LeadCreateUpdate, db: Session = Depends(get_postgres
             address=lead.address, 
             zipcode=lead.zipcode, 
             state=lead.state, 
-            country=lead.country, 
+            country=lead.country,
+            timezone = lead.timezone, 
             area_of_interest=lead.area_of_interest, 
             status=lead.status
         )

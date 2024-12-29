@@ -7,7 +7,7 @@ from sqlalchemy.exc import SQLAlchemyError
 from ..utils.utils import has_permission
 
 from ..models.postgres_models import LeadModel
-from ..models.mongo_models import Interaction
+from ..models.mongo_models import Interaction, InteractionResponse
 from ..configs.database.mongo_db import db_instance
 from ..configs.database.postgres_db import get_postgres_db
 
@@ -18,7 +18,7 @@ collection = db_instance.get_collection()
 
 
 @router.post('/interactions/{lead_id}', response_model=Interaction)
-async def add_interaction(lead_id: int, interaction: Interaction, db: Session = Depends(get_postgres_db), permissions: bool = has_permission(["sales"])):
+async def add_interaction(lead_id: int, interaction: Interaction, db: Session = Depends(get_postgres_db), permissions: bool = has_permission(["sales", "admin"])):
     try:
         interaction = interaction.model_dump()
         db_lead = db.query(LeadModel).filter(LeadModel.id == lead_id).first()
@@ -55,11 +55,18 @@ async def get_interactions(lead_id: int, db: Session = Depends(get_postgres_db),
         raise HTTPException(status_code=500, detail=f"An error occurred: {e}")
 
 
-@router.get('/interactions', response_model=List[Interaction])
+@router.get('/interactions', response_model=List[InteractionResponse])
 async def get_all_interactions(db: Session = Depends(get_postgres_db), permissions: bool = has_permission(["sales", "viewer", "admin"])):
     try:
         interactions = await collection.find({}).to_list(length=1000)
-        return interactions
+        lead_ids = [interaction['lead_id'] for interaction in interactions]
+        leads = db.query(LeadModel).filter(LeadModel.id.in_(lead_ids)).all()
+        lead_dict = {lead.id: lead.name for lead in leads}
+        result = []
+        for interaction in interactions:
+            interaction["lead_name"] = lead_dict.get(interaction["lead_id"], "Unknown")
+            result.append(interaction)
+        return result
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"An error occurred: {e}")
 
@@ -77,7 +84,7 @@ async def get_all_interactions(db: Session = Depends(get_postgres_db), permissio
 #     return interaction
 
 @router.put('/interactions/{lead_id}/{interaction_id}', response_model=Interaction)
-async def update_interaction(lead_id: str, interaction_id: str, interaction: Interaction, permissions: bool = has_permission(["sales"])):
+async def update_interaction(lead_id: str, interaction_id: str, interaction: Interaction, permissions: bool = has_permission(["sales", "admin"])):
     interaction = interaction.model_dump()
     try:
         result = await collection.update_one({"_id": ObjectId(interaction_id)}, {"$set": interaction})

@@ -50,3 +50,6 @@ class Interaction(BaseModel):
             datetime: lambda v: v.isoformat(),
             ObjectId: str,  # Convert ObjectId to string for serialization
         }
+
+class InteractionResponse(Interaction):
+    lead_name: str

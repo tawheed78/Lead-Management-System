@@ -34,6 +34,7 @@ async def add_interaction(lead_id: int, interaction: Interaction, db: Session = 
             db.commit()
             db.refresh(db_lead)
         else:
+            interaction["order"] = []
             db_lead.status = "contacted"
             db.commit()
             db.refresh(db_lead)

@@ -52,4 +52,5 @@ class Interaction(BaseModel):
         }
 
 class InteractionResponse(Interaction):
+    id: str
     lead_name: str

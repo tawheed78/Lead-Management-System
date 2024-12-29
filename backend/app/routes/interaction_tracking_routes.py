@@ -64,6 +64,7 @@ async def get_all_interactions(db: Session = Depends(get_postgres_db), permissio
         lead_dict = {lead.id: lead.name for lead in leads}
         result = []
         for interaction in interactions:
+            interaction['id'] = str(interaction["_id"])
             interaction["lead_name"] = lead_dict.get(interaction["lead_id"], "Unknown")
             result.append(interaction)
         return result

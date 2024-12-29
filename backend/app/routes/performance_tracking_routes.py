@@ -1,9 +1,12 @@
 from datetime import datetime, timedelta
 from typing import List
-from fastapi import APIRouter
+from fastapi import APIRouter,Depends
 from ..utils.utils import has_permission
-from ..models.mongo_models import Interaction
+from ..models.mongo_models import Interaction, Performance
 from ..configs.database.mongo_db import db_instance
+from ..configs.database.postgres_db import get_postgres_db
+from sqlalchemy.orm import Session
+from ..models.postgres_models import LeadModel
 
 
 router = APIRouter()
@@ -110,15 +113,46 @@ under_performing_pipeline = [
     }
 ]
 
+async def get_performance_data(pipeline, db: Session):
+    performance_data = await collection.aggregate(pipeline).to_list(length=100)
+    lead_ids = [performance['_id'] for performance in performance_data]
+    leads = db.query(LeadModel).filter(LeadModel.id.in_(lead_ids)).all()
+    lead_dict = {lead.id: lead.name for lead in leads}
+
+    response_data = []
+    for performance in performance_data:
+        response_data.append({
+            "id": performance["_id"],
+            "order_count": performance["order_count"],
+            "total_order_value": performance["total_order_value"],
+            "avg_order_value": performance["avg_order_value"],
+            "last_interaction_date": performance["last_interaction_date"],
+            "lead_name": lead_dict.get(performance["_id"], "Unknown"),
+        })
+    return response_data
 
 @router.get('/well-performing', response_model=List[dict])
-async def get_performance(permissions: bool = has_permission(["sales", "viewer", "admin"])):
-    performance = await collection.aggregate(well_performing_pipeline).to_list(length=100)
-    return performance
+async def get_well_performing(permissions: bool = has_permission(["sales", "viewer", "admin"]), db: Session = Depends(get_postgres_db)):
+    return await get_performance_data(well_performing_pipeline, db)
+
 
 
 @router.get('/under-performing', response_model=List[dict])
-async def get_performance(permissions: bool = has_permission(["sales", "viewer", "admin"])):
-    performance = await collection.aggregate(under_performing_pipeline).to_list(length=100)
-    return performance
+async def get_performance( permissions: bool = has_permission(["sales", "viewer", "admin"]), db: Session = Depends(get_postgres_db)):
+    performance_data = await collection.aggregate(under_performing_pipeline).to_list(length=100)
+    lead_ids = [performance['_id'] for performance in performance_data]
+    leads = db.query(LeadModel).filter(LeadModel.id.in_(lead_ids)).all()
+    lead_dict = {lead.id: lead.name for lead in leads}
+
+    response_data = []
+    for performance in performance_data:
+        response_data.append({
+            "id": performance["_id"],  # Assuming `Performance` has an `id` field
+            "order_count": performance["order_count"],
+            "total_order_value": performance["total_order_value"],
+            "avg_order_value": performance["avg_order_value"],
+            "last_interaction_date": performance["last_interaction_date"],
+            "lead_name": lead_dict.get(performance["_id"], "Unknown"),
+        })
+    return response_data
 

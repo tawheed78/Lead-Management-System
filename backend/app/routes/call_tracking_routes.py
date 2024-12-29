@@ -36,7 +36,7 @@ async def add_call(
         # Check if time is in the past, adjust if necessary
         if call_datetime < datetime.now():
             call_datetime += timedelta(days=1)
-    call_datetime = datetime.strptime(call_datetime, '%Y-%m-%d %H:%M:%S')
+    call_datetime = datetime.strptime(str(call_datetime), '%Y-%m-%d %H:%M:%S')
     next_call_date = call_datetime.date()
     next_call_time = call_datetime.time()
 

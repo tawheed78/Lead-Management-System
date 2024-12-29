@@ -54,3 +54,11 @@ class Interaction(BaseModel):
 class InteractionResponse(Interaction):
     id: str
     lead_name: str
+
+class Performance(BaseModel):
+    id: int
+    order_count: int
+    total_order_value: float
+    avg_order_value: float
+    last_interaction_date: datetime
+    lead_name: str

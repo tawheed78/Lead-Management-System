@@ -14,48 +14,76 @@ interface Lead {
   name: string
 }
 
+interface Order {
+  item: string
+  quantity: string
+  price: string
+}
+
 interface Interaction {
   id: string
-  leadId: string
-  leadName: string
-  type: string
-  date: string
-  notes: string
+  lead_id: string
+  lead_name: string
+  call_id: string
+  interaction_type: string
+  interaction_date: string
+  order: Order[] 
+  interaction_notes: string
 }
 
 export default function Interactions() {
   const { user, loading } = useAuth('admin')
   const [interactions, setInteractions] = useState<Interaction[]>([])
   const [leads, setLeads] = useState<Lead[]>([])
-  const [newInteraction, setNewInteraction] = useState<Omit<Interaction, 'id' | 'leadName'>>({ leadId: '', type: '', date: '', notes: '' })
+  const [newInteraction, setNewInteraction] = useState<Omit<Interaction, 'id' | 'lead_name'>>({ lead_id: '', call_id: '', interaction_type: '', interaction_date: '', order: [], interaction_notes: '' })
   const [isAddModalOpen, setIsAddModalOpen] = useState(false)
   const [isEditModalOpen, setIsEditModalOpen] = useState(false)
   const [editingInteraction, setEditingInteraction] = useState<Interaction | null>(null)
   const [filterLead, setFilterLead] = useState<string>('all')
 
   useEffect(() => {
-    // Fetch interactions and leads from API
     fetchInteractions()
     fetchLeads()
   }, [])
 
   const fetchInteractions = async () => {
-    // In a real app, this would be an API call
-    const mockInteractions: Interaction[] = [
-      { id: '1', leadId: '1', leadName: 'Restaurant A', type: 'Call', date: '2023-06-01', notes: 'Discussed new menu items' },
-      { id: '2', leadId: '2', leadName: 'Restaurant B', type: 'Email', date: '2023-06-02', notes: 'Sent product catalog' },
-    ]
-    setInteractions(mockInteractions)
+    try {
+      const token = localStorage.getItem('token')
+      const response = await fetch('http://127.0.0.1:8000/api/interactions', {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      })
+      if (response.ok) {
+        const data = await response.json()
+        setInteractions(data)
+        console.log(data)
+      } else {
+        console.error('Failed to fetch interactions')
+      }
+    } catch (error) {
+      console.error('Error fetching interactions:', error)
+    }
   }
 
   const fetchLeads = async () => {
-    // In a real app, this would be an API call
-    const mockLeads: Lead[] = [
-      { id: '1', name: 'Restaurant A' },
-      { id: '2', name: 'Restaurant B' },
-      { id: '3', name: 'Restaurant C' },
-    ]
-    setLeads(mockLeads)
+    try {
+      const token = localStorage.getItem('token')
+      const response = await fetch('http://127.0.0.1:8000/api/lead', {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      })
+      if (response.ok) {
+        const data = await response.json()
+        setLeads(data)
+        console.log(data)
+      } else {
+        console.error('Failed to fetch leads')
+      }
+    } catch (error) {
+      console.error('Error fetching leads:', error)
+    }
   }
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -67,14 +95,14 @@ export default function Interactions() {
   }
 
   const handleAddInteraction = async () => {
-    // In a real app, this would be an API call
+    
     const addedInteraction: Interaction = {
       id: String(interactions.length + 1),
-      leadName: leads.find(lead => lead.id === newInteraction.leadId)?.name || '',
+      lead_name: leads.find(lead => lead.id === newInteraction.lead_id)?.name || '',
       ...newInteraction
     }
     setInteractions([...interactions, addedInteraction])
-    setNewInteraction({ leadId: '', type: '', date: '', notes: '' })
+    setNewInteraction({ lead_id: '', call_id: '', interaction_type: '', interaction_date: '', order: [], interaction_notes: '' })
     setIsAddModalOpen(false)
   }
 
@@ -85,7 +113,7 @@ export default function Interactions() {
 
   const handleUpdateInteraction = async () => {
     if (editingInteraction) {
-      // In a real app, this would be an API call
+      
       const updatedInteractions = interactions.map(interaction => 
         interaction.id === editingInteraction.id ? editingInteraction : interaction
       )
@@ -96,14 +124,14 @@ export default function Interactions() {
   }
 
   const handleDeleteInteraction = async (id: string) => {
-    // In a real app, this would be an API call
+   
     const updatedInteractions = interactions.filter(interaction => interaction.id !== id)
     setInteractions(updatedInteractions)
   }
 
   const filteredInteractions = filterLead === 'all' || filterLead === ''
     ? interactions
-    : interactions.filter(interaction => interaction.leadId === filterLead)
+    : interactions.filter(interaction => interaction.lead_id === filterLead)
 
   if (loading) {
     return <div>Loading...</div>
@@ -123,8 +151,8 @@ export default function Interactions() {
             </DialogHeader>
             <div className="grid gap-4 py-4">
               <div className="grid grid-cols-4 items-center gap-4">
-                <Label htmlFor="leadId" className="text-right">Lead</Label>
-                <Select onValueChange={(value) => handleSelectChange('leadId', value)}>
+                <Label htmlFor="lead_id" className="text-right">Lead</Label>
+                <Select onValueChange={(value) => handleSelectChange('lead_id', value)}>
                   <SelectTrigger className="col-span-3">
                     <SelectValue placeholder="Select lead" />
                   </SelectTrigger>
@@ -136,25 +164,25 @@ export default function Interactions() {
                 </Select>
               </div>
               <div className="grid grid-cols-4 items-center gap-4">
-                <Label htmlFor="type" className="text-right">Type</Label>
-                <Select onValueChange={(value) => handleSelectChange('type', value)}>
+                <Label htmlFor="interaction_type" className="text-right">Type</Label>
+                <Select onValueChange={(value) => handleSelectChange('interaction_type', value)}>
                   <SelectTrigger className="col-span-3">
                     <SelectValue placeholder="Select type" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="call">Call</SelectItem>
-                    <SelectItem value="email">Email</SelectItem>
-                    <SelectItem value="meeting">Meeting</SelectItem>
+                    <SelectItem value="Call">Call</SelectItem>
+                    <SelectItem value="Email">Email</SelectItem>
+                    <SelectItem value="Meeting">Meeting</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
               <div className="grid grid-cols-4 items-center gap-4">
-                <Label htmlFor="date" className="text-right">Date</Label>
-                <Input id="date" name="date" type="date" value={newInteraction.date} onChange={handleInputChange} className="col-span-3" />
+                <Label htmlFor="interaction_date" className="text-right">Date</Label>
+                <Input id="interaction_date" name="interaction_date" type="date" value={newInteraction.interaction_date} onChange={handleInputChange} className="col-span-3" />
               </div>
               <div className="grid grid-cols-4 items-center gap-4">
-                <Label htmlFor="notes" className="text-right">Notes</Label>
-                <Input id="notes" name="notes" value={newInteraction.notes} onChange={handleInputChange} className="col-span-3" />
+                <Label htmlFor="interaction_notes" className="text-right">Notes</Label>
+                <Input id="interaction_notes" name="interaction_notes" value={newInteraction.interaction_notes} onChange={handleInputChange} className="col-span-3" />
               </div>
             </div>
             <Button onClick={handleAddInteraction}>Add Interaction</Button>
@@ -187,10 +215,10 @@ export default function Interactions() {
         <TableBody>
           {filteredInteractions.map((interaction) => (
             <TableRow key={interaction.id}>
-              <TableCell>{interaction.leadName}</TableCell>
-              <TableCell>{interaction.type}</TableCell>
-              <TableCell>{interaction.date}</TableCell>
-              <TableCell>{interaction.notes}</TableCell>
+              <TableCell>{interaction.lead_name}</TableCell>
+              <TableCell>{interaction.interaction_type}</TableCell>
+              <TableCell>{interaction.interaction_date}</TableCell>
+              <TableCell>{interaction.interaction_notes}</TableCell>
               <TableCell>
                 <Button variant="outline" size="sm" className="mr-2" onClick={() => handleEditInteraction(interaction)}>Edit</Button>
                 <Button variant="destructive" size="sm" onClick={() => handleDeleteInteraction(interaction.id)}>Delete</Button>
@@ -208,9 +236,9 @@ export default function Interactions() {
             <div className="grid gap-4 py-4">
               <div className="grid grid-cols-4 items-center gap-4">
                 <Label htmlFor="editLeadId" className="text-right">Lead</Label>
-                <Select onValueChange={(value) => setEditingInteraction({ ...editingInteraction, leadId: value, leadName: leads.find(lead => lead.id === value)?.name || '' })}>
+                <Select onValueChange={(value) => setEditingInteraction({ ...editingInteraction, lead_id: value, lead_name: leads.find(lead => lead.id === value)?.name || '' })}>
                   <SelectTrigger className="col-span-3">
-                    <SelectValue placeholder={editingInteraction.leadName} />
+                    <SelectValue placeholder={editingInteraction.lead_name} />
                   </SelectTrigger>
                   <SelectContent>
                     {leads.map((lead) => (
@@ -220,25 +248,25 @@ export default function Interactions() {
                 </Select>
               </div>
               <div className="grid grid-cols-4 items-center gap-4">
-                <Label htmlFor="editType" className="text-right">Type</Label>
-                <Select onValueChange={(value) => setEditingInteraction({ ...editingInteraction, type: value })}>
+                <Label htmlFor="editInteractionType" className="text-right">Type</Label>
+                <Select onValueChange={(value) => setEditingInteraction({ ...editingInteraction, interaction_type: value })}>
                   <SelectTrigger className="col-span-3">
-                    <SelectValue placeholder={editingInteraction.type} />
+                    <SelectValue placeholder={editingInteraction.interaction_type} />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="call">Call</SelectItem>
-                    <SelectItem value="email">Email</SelectItem>
-                    <SelectItem value="meeting">Meeting</SelectItem>
+                    <SelectItem value="Call">Call</SelectItem>
+                    <SelectItem value="Email">Email</SelectItem>
+                    <SelectItem value="Meeting">Meeting</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
               <div className="grid grid-cols-4 items-center gap-4">
-                <Label htmlFor="editDate" className="text-right">Date</Label>
-                <Input id="editDate" name="date" type="date" value={editingInteraction.date} onChange={(e) => setEditingInteraction({ ...editingInteraction, date: e.target.value })} className="col-span-3" />
+                <Label htmlFor="editInteractionDate" className="text-right">Date</Label>
+                <Input id="editInteractionDate" name="interaction_date" type="date" value={editingInteraction.interaction_date} onChange={(e) => setEditingInteraction({ ...editingInteraction, interaction_date: e.target.value })} className="col-span-3" />
               </div>
               <div className="grid grid-cols-4 items-center gap-4">
-                <Label htmlFor="editNotes" className="text-right">Notes</Label>
-                <Input id="editNotes" name="notes" value={editingInteraction.notes} onChange={(e) => setEditingInteraction({ ...editingInteraction, notes: e.target.value })} className="col-span-3" />
+                <Label htmlFor="editInteractionNotes" className="text-right">Notes</Label>
+                <Input id="editInteractionNotes" name="interaction_notes" value={editingInteraction.interaction_notes} onChange={(e) => setEditingInteraction({ ...editingInteraction, interaction_notes: e.target.value })} className="col-span-3" />
               </div>
             </div>
           )}
@@ -248,4 +276,3 @@ export default function Interactions() {
     </div>
   )
 }
-

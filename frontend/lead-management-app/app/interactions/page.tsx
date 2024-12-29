@@ -8,7 +8,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog'
 import { Label } from '@/components/ui/label'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
-import { FaTrash, FaEdit, FaPhone } from 'react-icons/fa';
+import { FaTrash, FaEdit, FaPhone, FaEye } from 'react-icons/fa';
 
 interface Lead {
   id: string
@@ -52,6 +52,8 @@ export default function Interactions() {
   const [isEditModalOpen, setIsEditModalOpen] = useState(false)
   const [editingInteraction, setEditingInteraction] = useState<Interaction | null>(null)
   const [filterLead, setFilterLead] = useState<string>('all')
+  const [viewingInteraction, setViewingInteraction] = useState<Interaction | null>(null)
+  const [isViewModalOpen, setIsViewModalOpen] = useState(false)
 
   useEffect(() => {
     fetchInteractions()
@@ -69,7 +71,7 @@ export default function Interactions() {
       if (response.ok) {
         const data = await response.json()
         setInteractions(data)
-        // console.log(data)
+        console.log(data)
       } else {
         console.error('Failed to fetch interactions')
       }
@@ -122,16 +124,10 @@ export default function Interactions() {
     setNewInteraction({ ...newInteraction, order: updatedOrders })
   }
 
-  // const handleAddInteraction = async () => {
-  //   const addedInteraction: Interaction = {
-  //     id: String(interactions.length + 1),
-  //     lead_name: leads.find(lead => lead.id === newInteraction.lead_id)?.name || '',
-  //     ...newInteraction
-  //   }
-  //   setInteractions([...interactions, addedInteraction])
-  //   setNewInteraction({ lead_id: '', call_id: '', interaction_type: '', interaction_date: '', order: [], interaction_notes: '' })
-  //   setIsAddModalOpen(false)
-  // }
+  const handleViewInteraction = (interaction: Interaction) => {
+    setViewingInteraction(interaction)
+    setIsViewModalOpen(true)
+  }
 
   const handleAddInteraction = async () => {
     try {
@@ -165,23 +161,58 @@ export default function Interactions() {
     setIsEditModalOpen(true)
   }
 
+ 
   const handleUpdateInteraction = async () => {
     if (editingInteraction) {
-      
-      const updatedInteractions = interactions.map(interaction => 
-        interaction.id === editingInteraction.id ? editingInteraction : interaction
-      )
-      setInteractions(updatedInteractions)
-      setIsEditModalOpen(false)
-      setEditingInteraction(null)
+      try {
+        console.log('hi')
+        const token = localStorage.getItem('token')
+        const response = await fetch(`http://127.0.0.1:8000/api/interactions/${editingInteraction.lead_id}/${editingInteraction.id}`, {
+          method: 'PUT',
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify(editingInteraction),
+        })
+        if (response.ok) {
+          const updatedInteraction = await response.json()
+          const updatedInteractions = interactions.map(interaction => 
+            interaction.id === updatedInteraction.id ? updatedInteraction : interaction
+          )
+          setInteractions(updatedInteractions)
+          setIsEditModalOpen(false)
+          setEditingInteraction(null)
+        } else {
+          console.error('Failed to update interaction')
+        }
+      } catch (error) {
+        console.error('Error updating interaction:', error)
+      }
     }
   }
 
+
   const handleDeleteInteraction = async (id: string) => {
-   
-    const updatedInteractions = interactions.filter(interaction => interaction.id !== id)
-    setInteractions(updatedInteractions)
+    try {
+      const token = localStorage.getItem('token')
+      const response = await fetch(`http://127.0.0.1:8000/api/interactions/${id}`, {
+        method: 'DELETE',
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      })
+      if (response.ok) {
+        const updatedInteractions = interactions.filter(interaction => interaction.id !== id)
+        setInteractions(updatedInteractions)
+      } else {
+        console.error('Failed to delete interaction')
+      }
+    } catch (error) {
+      console.error('Error deleting interaction:', error)
+    }
   }
+
 
   const filteredInteractions = filterLead === 'all' || filterLead === ''
     ? interactions
@@ -298,13 +329,64 @@ export default function Interactions() {
               <TableCell>{interaction.interaction_date}</TableCell>
               <TableCell>{interaction.interaction_notes}</TableCell>
               <TableCell>
-                <Button variant="outline" size="sm" className="mr-2" onClick={() => handleEditInteraction(interaction)}>Edit</Button>
-                <Button variant="destructive" size="sm" onClick={() => handleDeleteInteraction(interaction.id)}>Delete</Button>
+                <Button variant="outline" size="sm" className="mr-2" onClick={() => handleEditInteraction(interaction)}><FaEdit /></Button>
+                <Button variant="destructive" size="sm" className='mr-2' onClick={() => handleDeleteInteraction(interaction.id)}><FaTrash /></Button>
+                <Button variant="outline" size="sm" className='mr-2' onClick={() => handleViewInteraction(interaction)}><FaEye /></Button>
               </TableCell>
             </TableRow>
           ))}
         </TableBody>
       </Table>
+      <Dialog open={isViewModalOpen} onOpenChange={setIsViewModalOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>View Interaction</DialogTitle>
+          </DialogHeader>
+          {viewingInteraction && (
+            <div className="grid gap-4 py-4">
+              <div className="grid grid-cols-4 items-center gap-4">
+                <Label className="text-right">Lead: </Label>
+                <div className="col-span-3">{viewingInteraction.lead_name}</div>
+              </div>
+              <div className="grid grid-cols-4 items-center gap-4">
+                <Label className="text-right">Type: </Label>
+                <div className="col-span-3">{viewingInteraction.interaction_type}</div>
+              </div>
+              <div className="grid grid-cols-4 items-center gap-4">
+                <Label className="text-right">Date: </Label>
+                <div className="col-span-3">{viewingInteraction.interaction_date}</div>
+              </div>
+              <div className="grid grid-cols-4 items-center gap-4">
+                <Label className="text-right">Notes: </Label>
+                <div className="col-span-3">{viewingInteraction.interaction_notes}</div>
+              </div>
+              <div className="grid grid-cols-4 items-center gap-4">
+                <Label className="text-right">Orders: </Label>
+                <div className="col-span-3">
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead>Item</TableHead>
+                        <TableHead>Quantity</TableHead>
+                        <TableHead>Price</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {viewingInteraction.order.map((order, index) => (
+                        <TableRow key={index}>
+                          <TableCell>{order.item}</TableCell>
+                          <TableCell>{order.quantity}</TableCell>
+                          <TableCell>{order.price}</TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                </div>
+              </div>
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
       <Dialog open={isEditModalOpen} onOpenChange={setIsEditModalOpen}>
         <DialogContent>
           <DialogHeader>
@@ -346,6 +428,18 @@ export default function Interactions() {
                 <Label htmlFor="editInteractionNotes" className="text-right">Notes</Label>
                 <Input id="editInteractionNotes" name="interaction_notes" value={editingInteraction.interaction_notes} onChange={(e) => setEditingInteraction({ ...editingInteraction, interaction_notes: e.target.value })} className="col-span-3" />
               </div>
+              <div className="grid grid-cols-4 items-center gap-4">
+                <Label className="text-right">Orders</Label>
+                <Button onClick={() => setEditingInteraction({ ...editingInteraction, order: [...editingInteraction.order, { item: '', quantity: '', price: '' }] })} className="col-span-3">Add Order Item</Button>
+              </div>
+              {editingInteraction.order.map((order, index) => (
+                <div key={index} className="grid grid-cols-4 items-center gap-4">
+                  <Input placeholder="Item" value={order.item} onChange={(e) => setEditingInteraction({ ...editingInteraction, order: editingInteraction.order.map((o, i) => i === index ? { ...o, item: e.target.value } : o) })} className="col-span-1" />
+                  <Input placeholder="Quantity" value={order.quantity} onChange={(e) => setEditingInteraction({ ...editingInteraction, order: editingInteraction.order.map((o, i) => i === index ? { ...o, quantity: e.target.value } : o) })} className="col-span-1" />
+                  <Input placeholder="Price" value={order.price} onChange={(e) => setEditingInteraction({ ...editingInteraction, order: editingInteraction.order.map((o, i) => i === index ? { ...o, price: e.target.value } : o) })} className="col-span-1" />
+                  <Button variant="destructive" onClick={() => setEditingInteraction({ ...editingInteraction, order: editingInteraction.order.filter((_, i) => i !== index) })} className="col-span-1">Remove</Button>
+                </div>
+              ))}
             </div>
           )}
           <Button onClick={handleUpdateInteraction}>Update Interaction</Button>
@@ -354,3 +448,4 @@ export default function Interactions() {
     </div>
   )
 }
+

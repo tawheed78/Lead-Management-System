@@ -13,7 +13,7 @@ from ..schemas.schemas import CallCreate, CallUpdate, CallTodayResponse
 
 router = APIRouter()
 
-@router.post('/{lead_id}/call', response_model=CallCreate)
+@router.post('/lead/{lead_id}/call', response_model=CallCreate)
 async def add_call(
     lead_id: int,
     call: CallCreate,
@@ -54,7 +54,7 @@ async def add_call(
     return db_call
 
 
-@router.put('/{lead_id}/call/{call_id}/frequency')
+@router.put('/lead/{lead_id}/call/{call_id}/frequency')
 async def update_call_frequency(lead_id: int, call_id: int, call: CallUpdate, db: Session = Depends(get_postgres_db), permissions: bool = has_permission(["sales", "admin"])):
     db_call = db.query(CallModel).filter(CallModel.id == call_id, CallModel.lead_id == lead_id).first()
     if not db_call:
@@ -66,7 +66,7 @@ async def update_call_frequency(lead_id: int, call_id: int, call: CallUpdate, db
     return db_call
 
 
-@router.put('/{lead_id}/call/{call_id}/log', response_model=CallCreate)
+@router.put('/lead/{lead_id}/call/{call_id}/log', response_model=CallCreate)
 async def update_call_log(lead_id:int, call_id:int, db: Session = Depends(get_postgres_db), permissions: bool = has_permission(["sales", "admin"])):
     db_call = db.query(CallModel).filter(CallModel.id == call_id, CallModel.lead_id == lead_id).first()
     if not db_call:
@@ -79,8 +79,8 @@ async def update_call_log(lead_id:int, call_id:int, db: Session = Depends(get_po
     return db_call
 
 
-@router.get('/calls/today', response_model=List[CallTodayResponse])
-async def calls_today(db: Session = Depends(get_postgres_db), permissions: bool = has_permission(["sales", 'viewer', 'admin'])):
+@router.get('/calls', response_model=List[CallTodayResponse])
+async def calls(db: Session = Depends(get_postgres_db), permissions: bool = has_permission(["sales", 'viewer', 'admin'])):
     # today = datetime.now()
     today = datetime.now().replace(hour=0, minute=0, second=0, microsecond=0)
     calls = (
@@ -106,7 +106,36 @@ async def calls_today(db: Session = Depends(get_postgres_db), permissions: bool 
     return result
 
 
-@router.delete('/{lead_id}/call/{call_id}')
+@router.get('/calls/today', response_model=List[CallTodayResponse])
+async def calls_today(db: Session = Depends(get_postgres_db), permissions: bool = has_permission(["sales", 'viewer', 'admin'])):
+    today_start = datetime.now().replace(hour=0, minute=0, second=0, microsecond=0)
+    today_end = today_start + timedelta(days=1)
+    calls = (
+        db.query(CallModel)
+        .options(joinedload(CallModel.lead), joinedload(CallModel.poc))
+        .filter(
+            cast(CallModel.next_call_date, DateTime) >= today_start,
+            cast(CallModel.next_call_date, DateTime) < today_end
+        )
+        .all()
+    )
+    result = []
+    for call in calls:
+        result.append(CallTodayResponse(
+            id = call.id,
+            lead_id=call.lead_id,
+            poc_id=call.poc_id,
+            lead_name=call.lead.name,
+            poc_name=call.poc.name,
+            frequency=call.frequency,
+            poc_contact=call.poc.phone_number,
+            next_call_date= call.next_call_date,
+            next_call_time= call.next_call_time
+        ))
+    return result
+
+
+@router.delete('/lead/{lead_id}/call/{call_id}')
 async def delete_call(call_id: int, db: Session = Depends(get_postgres_db), permissions: bool = has_permission(["sales", 'viewer', 'admin'])):
     try:
         db_call = db.query(CallModel).filter(CallModel.id == call_id).first()

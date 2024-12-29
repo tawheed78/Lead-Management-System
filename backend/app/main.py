@@ -27,7 +27,7 @@ app.add_middleware(
 app.include_router(user_router, prefix="/api/user", tags=["User Operations"])
 app.include_router(lead_router, prefix="/api/lead", tags=["Lead Operations"])
 app.include_router(point_of_contact_router, prefix="/api/lead", tags=["Point of Contact Operations"])
-app.include_router(call_tracking_router, prefix="/api/lead", tags=["Call Tracking Operations"])
+app.include_router(call_tracking_router, prefix="/api", tags=["Call Tracking Operations"])
 app.include_router(interaction_tracking_router, prefix="/api", tags=["Interaction Tracking Operations"])
 app.include_router(performance_tracking_router, prefix="/api/performance", tags=["Performance Tracking Operations"])
 

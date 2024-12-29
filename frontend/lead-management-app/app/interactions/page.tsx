@@ -8,6 +8,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog'
 import { Label } from '@/components/ui/label'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
+import { FaTrash, FaEdit, FaPhone } from 'react-icons/fa';
 
 interface Lead {
   id: string
@@ -31,11 +32,22 @@ interface Interaction {
   interaction_notes: string
 }
 
+interface AddInteraction {
+  id: string
+  lead_id: string
+  lead_name: string
+  interaction_type: string
+  interaction_date: string
+  order: Order[] 
+  interaction_notes: string
+  follow_up: string
+}
+
 export default function Interactions() {
   const { user, loading } = useAuth('admin')
   const [interactions, setInteractions] = useState<Interaction[]>([])
   const [leads, setLeads] = useState<Lead[]>([])
-  const [newInteraction, setNewInteraction] = useState<Omit<Interaction, 'id' | 'lead_name'>>({ lead_id: '', call_id: '', interaction_type: '', interaction_date: '', order: [], interaction_notes: '' })
+  const [newInteraction, setNewInteraction] = useState<Omit<AddInteraction, 'id' | 'lead_name'>>({ lead_id: '', interaction_type: '', interaction_date: '', order: [], interaction_notes: '', follow_up: '' })
   const [isAddModalOpen, setIsAddModalOpen] = useState(false)
   const [isEditModalOpen, setIsEditModalOpen] = useState(false)
   const [editingInteraction, setEditingInteraction] = useState<Interaction | null>(null)
@@ -57,7 +69,7 @@ export default function Interactions() {
       if (response.ok) {
         const data = await response.json()
         setInteractions(data)
-        console.log(data)
+        // console.log(data)
       } else {
         console.error('Failed to fetch interactions')
       }
@@ -77,7 +89,7 @@ export default function Interactions() {
       if (response.ok) {
         const data = await response.json()
         setLeads(data)
-        console.log(data)
+        // console.log(data)
       } else {
         console.error('Failed to fetch leads')
       }
@@ -94,16 +106,58 @@ export default function Interactions() {
     setNewInteraction({ ...newInteraction, [name]: value })
   }
 
+  const handleOrderChange = (index: number, name: string, value: string) => {
+    const updatedOrders = newInteraction.order.map((order, i) => 
+      i === index ? { ...order, [name]: value } : order
+    )
+    setNewInteraction({ ...newInteraction, order: updatedOrders })
+  }
+
+  const addOrderItem = () => {
+    setNewInteraction({ ...newInteraction, order: [...newInteraction.order, { item: '', quantity: '', price: '' }] })
+  }
+
+  const removeOrderItem = (index: number) => {
+    const updatedOrders = newInteraction.order.filter((_, i) => i !== index)
+    setNewInteraction({ ...newInteraction, order: updatedOrders })
+  }
+
+  // const handleAddInteraction = async () => {
+  //   const addedInteraction: Interaction = {
+  //     id: String(interactions.length + 1),
+  //     lead_name: leads.find(lead => lead.id === newInteraction.lead_id)?.name || '',
+  //     ...newInteraction
+  //   }
+  //   setInteractions([...interactions, addedInteraction])
+  //   setNewInteraction({ lead_id: '', call_id: '', interaction_type: '', interaction_date: '', order: [], interaction_notes: '' })
+  //   setIsAddModalOpen(false)
+  // }
+
   const handleAddInteraction = async () => {
-    
-    const addedInteraction: Interaction = {
-      id: String(interactions.length + 1),
-      lead_name: leads.find(lead => lead.id === newInteraction.lead_id)?.name || '',
-      ...newInteraction
+    try {
+      const token = localStorage.getItem('token')
+      const response = await fetch(`http://127.0.0.1:8000/api/interactions/${newInteraction.lead_id}`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`,
+
+        },
+        body: JSON.stringify(newInteraction),
+        
+      })
+      if (response.ok) {
+        const addedInteraction = await response.json()
+        console.log(addedInteraction)
+        setInteractions([...interactions, addedInteraction])
+        setNewInteraction({lead_id:'', interaction_type: '', interaction_date: '', order: [], interaction_notes: '', follow_up: '' })
+        setIsAddModalOpen(false)
+      } else {
+        console.error('Failed to add interaction')
+      }
+    } catch (error) {
+      console.error('Error adding Interaction:', error)
     }
-    setInteractions([...interactions, addedInteraction])
-    setNewInteraction({ lead_id: '', call_id: '', interaction_type: '', interaction_date: '', order: [], interaction_notes: '' })
-    setIsAddModalOpen(false)
   }
 
   const handleEditInteraction = (interaction: Interaction) => {
@@ -183,6 +237,30 @@ export default function Interactions() {
               <div className="grid grid-cols-4 items-center gap-4">
                 <Label htmlFor="interaction_notes" className="text-right">Notes</Label>
                 <Input id="interaction_notes" name="interaction_notes" value={newInteraction.interaction_notes} onChange={handleInputChange} className="col-span-3" />
+              </div>
+              <div className="grid grid-cols-4 items-center gap-4">
+                <Label className="text-right">Orders</Label>
+                <Button onClick={addOrderItem} className="col-span-3">Add Order Item</Button>
+              </div>
+              {newInteraction.order.map((order, index) => (
+                <div key={index} className="grid grid-cols-4 items-center gap-4">
+                  <Input placeholder="Item" value={order.item} onChange={(e) => handleOrderChange(index, 'item', e.target.value)} className="col-span-1" />
+                  <Input placeholder="Quantity" value={order.quantity} onChange={(e) => handleOrderChange(index, 'quantity', e.target.value)} className="col-span-1" />
+                  <Input placeholder="Price" value={order.price} onChange={(e) => handleOrderChange(index, 'price', e.target.value)} className="col-span-1" />
+                  <Button variant="destructive" onClick={() => removeOrderItem(index)} className="col-span-1">Remove</Button>
+              </div>
+              ))}
+              <div className="grid grid-cols-4 items-center gap-4">
+                <Label htmlFor="follow_up" className="text-right">Follow Up</Label>
+                <Select onValueChange={(value) => handleSelectChange('follow_up', value)}>
+                  <SelectTrigger className="col-span-3">
+                    <SelectValue placeholder="Select type" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="Yes">Yes</SelectItem>
+                    <SelectItem value="No">No</SelectItem>
+                  </SelectContent>
+                </Select>
               </div>
             </div>
             <Button onClick={handleAddInteraction}>Add Interaction</Button>

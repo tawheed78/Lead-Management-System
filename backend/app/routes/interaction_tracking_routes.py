@@ -1,4 +1,4 @@
-from datetime import datetime, timedelta
+from datetime import datetime
 from typing import List
 from bson import ObjectId
 from fastapi import APIRouter, Depends, HTTPException
@@ -74,18 +74,6 @@ async def get_all_interactions(db: Session = Depends(get_postgres_db), permissio
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"An error occurred: {e}")
 
-# @router.get('/interactions/{interaction_id}', response_model=Interaction)
-# async def get_interaction(interaction_id: str):
-#     try:
-#         print('h')
-#         interaction_id = ObjectId(interaction_id)
-#     except Exception:
-#         raise HTTPException(status_code=400, detail="Invalid interaction ID format")
-#     interaction = await collection.find_one({"_id": interaction_id})
-    
-#     if interaction is None:
-#         raise HTTPException(status_code=404, detail="Interaction not found")
-#     return interaction
 
 @router.put('/interactions/{lead_id}/{interaction_id}', response_model=Interaction)
 async def update_interaction(lead_id: str, interaction_id: str, interaction: Interaction, permissions: bool = has_permission(["sales", "admin"])):

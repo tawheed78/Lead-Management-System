@@ -2,15 +2,24 @@ import internal from "stream"
 
 const BASE_URL = 'http://127.0.0.1:8000/api'
 
+export interface Lead {
+  id: string
+  name: string
+}
+
+
 export interface Call {
-    id: string
-    lead_id: string
-    leadName: string
-    contact: string
-    frequency: string
-    last_call_date: string
-    next_call_date: string
-  }
+  id: string
+  lead_id: string
+  lead_name: string
+  poc_name: string
+  poc_contact: string
+  next_call_date: string
+  next_call_time: string
+  notes: string
+  frequency: string
+  log: string
+}
 
 export const fetchLeads = async (token: string) => {
   const response = await fetch(`${BASE_URL}/lead`, {
@@ -24,8 +33,20 @@ export const fetchLeads = async (token: string) => {
   return response.json()
 }
 
+export const fetchPointOfContacts = async (token: string, lead_id: string) => {
+  const response = await fetch(`${BASE_URL}/lead/${lead_id}/pocs`, {
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+  })
+  if (!response.ok) {
+    throw new Error('Failed to fetch leads')
+  }
+  return response.json()
+}
+
 export const fetchCalls = async (token: string) => {
-  const response = await fetch(`${BASE_URL}/call`, {
+  const response = await fetch(`${BASE_URL}/calls`, {
     headers: {
       Authorization: `Bearer ${token}`,
     },
@@ -33,9 +54,9 @@ export const fetchCalls = async (token: string) => {
   if (!response.ok) {
     throw new Error('Failed to fetch calls')
   }
+  
   return response.json()
 }
-
 export const addCall = async (newCall: Omit<Call, 'id'>, token: string) => {
   const response = await fetch(`${BASE_URL}/lead/${newCall.lead_id}/call`, {
     method: 'POST',
@@ -78,15 +99,14 @@ export const updateCallFrequency = async (leadId: string, callId: string, freque
   return response.json()
 }
 
-export const updateCallLog = async (leadId: string, callId: string, log: string, token: string) => {
+export const updateCallLog = async (leadId: string, callId: string, token: string) => {
   const response = await fetch(`${BASE_URL}/lead/${leadId}/call/${callId}/log`, {
     method: 'PUT',
     headers: {
       'Content-Type': 'application/json',
       Authorization: `Bearer ${token}`,
     },
-    body: JSON.stringify({ log }),
-  })
+  });
   if (!response.ok) {
     throw new Error('Failed to update call log')
   }

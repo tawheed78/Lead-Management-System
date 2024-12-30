@@ -10,120 +10,8 @@ import { Label } from '@/components/ui/label'
 import { Input } from '@/components/ui/input'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { FaTrash, FaEdit, FaPhone } from 'react-icons/fa';
+import { Lead, Call, fetchLeads, fetchCalls, fetchPointOfContacts, updateCallLog, updateCallFrequency, deleteCall, addCall} from '@/services/calls/callService'
 
-interface Lead {
-  id: string
-  name: string
-}
-
-
-interface Call {
-  id: string
-  lead_id: string
-  lead_name: string
-  poc_name: string
-  poc_contact: string
-  next_call_date: string
-  next_call_time: string
-  notes: string
-  frequency: string
-  log: string
-}
-
-const BASE_URL = 'http://127.0.0.1:8000/api'
-
-const fetchLeads = async (token: string) => {
-  const response = await fetch(`${BASE_URL}/lead`, {
-    headers: {
-      Authorization: `Bearer ${token}`,
-    },
-  })
-  if (!response.ok) {
-    throw new Error('Failed to fetch leads')
-  }
-  return response.json()
-}
-
-const fetchPointOfContacts = async (token: string, lead_id: string) => {
-  const response = await fetch(`${BASE_URL}/lead/${lead_id}/pocs`, {
-    headers: {
-      Authorization: `Bearer ${token}`,
-    },
-  })
-  if (!response.ok) {
-    throw new Error('Failed to fetch leads')
-  }
-  return response.json()
-}
-
-const fetchCalls = async (token: string) => {
-  const response = await fetch(`${BASE_URL}/calls`, {
-    headers: {
-      Authorization: `Bearer ${token}`,
-    },
-  })
-  if (!response.ok) {
-    throw new Error('Failed to fetch calls')
-  }
-  
-  return response.json()
-}
-
-const addCall = async (newCall: Omit<Call, 'id'>, token: string) => {
-  const response = await fetch(`${BASE_URL}/lead/${newCall.lead_id}/call`, {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      Authorization: `Bearer ${token}`,
-    },
-    body: JSON.stringify(newCall),
-  })
-  if (!response.ok) {
-    throw new Error('Failed to add call')
-  }
-  return response.json()
-}
-
-const deleteCall = async (leadId: string, callId: string, token: string) => {
-  const response = await fetch(`${BASE_URL}/lead/${leadId}/call/${callId}`, {
-    method: 'DELETE',
-    headers: {
-      Authorization: `Bearer ${token}`,
-    },
-  })
-  if (!response.ok) {
-    throw new Error('Failed to delete call')
-  }
-}
-
-const updateCallFrequency = async (leadId: string, callId: string, frequency: string, token: string) => {
-  const response = await fetch(`${BASE_URL}/lead/${leadId}/call/${callId}/frequency`, {
-    method: 'PUT',
-    headers: {
-      'Content-Type': 'application/json',
-      Authorization: `Bearer ${token}`,
-    },
-    body: JSON.stringify({ frequency }),
-  })
-  if (!response.ok) {
-    throw new Error('Failed to update call frequency')
-  }
-  return response.json()
-}
-
-const updateCallLog = async (leadId: string, callId: string, token: string) => {
-  const response = await fetch(`${BASE_URL}/lead/${leadId}/call/${callId}/log`, {
-    method: 'PUT',
-    headers: {
-      'Content-Type': 'application/json',
-      Authorization: `Bearer ${token}`,
-    },
-  });
-  if (!response.ok) {
-    throw new Error('Failed to update call log')
-  }
-  return response.json()
-}
 
 export default function CallPlanning() {
   const { user, loading } = useAuth('admin')
@@ -135,8 +23,6 @@ export default function CallPlanning() {
   const [isUpdateModalOpen, setIsUpdateModalOpen] = useState(false);
   const [selectedCall, setSelectedCall] = useState<Call | null>(null);
   const [updateFrequency, setUpdateFrequency] = useState('');
-  // const [updateDate, setUpdateDate] = useState('');
-  // const [updateTime, setUpdateTime] = useState('');
 
   const token = localStorage.getItem('token')
 
@@ -184,8 +70,6 @@ export default function CallPlanning() {
   const openUpdateModal = (call: Call) => {
     setSelectedCall(call);
     setUpdateFrequency(call.frequency);
-    // setUpdateDate(call.next_call_date);
-    // setUpdateTime(call.next_call_time);
     setIsUpdateModalOpen(true);
   };
 
@@ -193,13 +77,6 @@ export default function CallPlanning() {
     setUpdateFrequency(e.target.value);
   };
 
-  // const handleUpdateDateChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-  //   setUpdateDate(e.target.value);
-  // };
-
-  // const handleUpdateTimeChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-  //   setUpdateTime(e.target.value);
-  // };
 
   const handleAddCall = async () => {
     if (token) {
@@ -287,10 +164,6 @@ export default function CallPlanning() {
                   </SelectContent>
                 </Select>
               </div>
-              {/* <div className="grid grid-cols-4 items-center gap-4">
-                <Label htmlFor="contact" className="text-right">Contact</Label>
-                <Input id="contact" name="contact" value={newCall.poc_contact} onChange={handleInputChange} className="col-span-3" />
-              </div> */}
               <div className="grid grid-cols-4 items-center gap-4">
                 <Label htmlFor="pocId" className="text-right">Point of Contact</Label>
                 <Select onValueChange={(value) => handleSelectChange('poc_id', value)}>

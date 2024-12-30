@@ -4,6 +4,13 @@ interface Lead {
   status: string
 }
 
+export interface TodaysCalls {
+  id: string
+  lead_name: string
+  poc_contact: string
+  next_call_time: string
+}
+
 export async function fetchDashboardData(token: string) {
     try {
         const leadsResponse = await fetch('http://127.0.0.1:8000/api/lead', {
@@ -24,7 +31,7 @@ export async function fetchDashboardData(token: string) {
         return {
           totalLeads: leadsData.length,
           activeLeads: activeLeadsData.length,
-          todaysCalls: callsData.length,
+          todaysCalls: callsData,
         }
       } else {
         throw new Error('Failed to fetch dashboard data')

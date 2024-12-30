@@ -1,9 +1,10 @@
 from fastapi import APIRouter, Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
-from ..utils.utils import hash_password, verify_password, create_access_token, decode_token
+from ..utils.utils import decode_token
 from ..configs.database.postgres_db import get_postgres_db
 from ..models.postgres_models import UserModel
 from ..schemas.schemas import UserCreate
+from ..services.user_service import create_user, authenticate_user, create_access_token_for_user
 
 router = APIRouter()
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
@@ -14,20 +15,16 @@ async def register_user(form_data: UserCreate, db = Depends(get_postgres_db)):
     existing_username = db.query(UserModel).filter(UserModel.username == form_data.username).first()
     if existing_username:
         raise HTTPException(status_code=400, detail="Username already registered")
-    hashed_password = hash_password(form_data.password)
-    new_user = UserModel(username=form_data.username, email=form_data.email, full_name=form_data.full_name, role=form_data.role, password=hashed_password)
-    db.add(new_user)
-    db.commit()
-    db.refresh(new_user)
+    new_user = create_user(db, form_data.username, form_data.email, form_data.full_name, form_data.role, form_data.password)
     return {"message": "User registered successfully"}
 
 
 @router.post("/token")
 async def login(form_data: OAuth2PasswordRequestForm = Depends(), db = Depends(get_postgres_db)):
-    user = db.query(UserModel).filter(UserModel.username == form_data.username).first()
-    if not user or not verify_password(form_data.password, user.password):
+    user = authenticate_user(db, form_data.username, form_data.password)
+    if not user:
         raise HTTPException(status_code=401, detail="Invalid credentials")
-    access_token = create_access_token(data={"sub": form_data.username, "role": user.role})
+    access_token = create_access_token_for_user(user)
     return {"access_token": access_token, "token_type": "bearer"}
 
 @router.get("/auth/me")

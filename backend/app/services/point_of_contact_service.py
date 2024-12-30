@@ -2,7 +2,7 @@ from sqlalchemy.orm import Session
 from sqlalchemy.exc import SQLAlchemyError
 from fastapi import HTTPException
 from ..models.postgres_models import LeadModel, PointOfContactModel
-from ..schemas.schemas import POC, POCList
+from ..schemas.postgres_schemas import POC, POCList
 
 
 def add_poc_to_lead(lead_id: int, poc: POC, db: Session):

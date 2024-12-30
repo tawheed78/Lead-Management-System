@@ -5,7 +5,7 @@ from sqlalchemy import cast, DateTime
 from fastapi import HTTPException
 from sqlalchemy.exc import SQLAlchemyError
 from ..models.postgres_models import LeadModel, CallModel, PointOfContactModel
-from ..schemas.schemas import CallCreate, CallUpdate
+from ..schemas.postgres_schemas import CallCreate, CallUpdate
 from ..utils.utils import convert_to_ist
 
 def add_call_to_lead(lead_id: int, call: CallCreate, db: Session):

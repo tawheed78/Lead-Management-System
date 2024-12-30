@@ -5,7 +5,7 @@ type Role = 'admin' | 'sales' | 'viewer'
 
 interface User {
   id: string
-  name: string
+  username: string
   role: Role
 }
 
@@ -22,7 +22,7 @@ export function useAuth(requiredRole?: Role) {
         if (!token) {
           throw new Error('No token found');
         }
-        // Fetch user details from backend
+        // Fetch user details from backend like role, username.
         const response = await fetch('http://127.0.0.1:8000/api/user/auth/me', {
           method: 'GET',
           headers: {

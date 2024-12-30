@@ -9,10 +9,10 @@ interface SidebarProps {
 
 const navItems = [
   { name: 'Dashboard', href: '/', icon: Home, roles: ['admin', 'sales', 'viewer'] },
-  { name: 'Leads', href: '/leads', icon: Users, roles: ['admin', 'sales'] },
-  { name: 'Interactions', href: '/interactions', icon: PhoneCall, roles: ['admin', 'sales'] },
-  { name: 'Call Planning', href: '/call-planning', icon: Calendar, roles: ['admin', 'sales'] },
-  { name: 'Performance', href: '/performance', icon: BarChart2, roles: ['admin'] },
+  { name: 'Leads', href: '/leads', icon: Users, roles: ['admin', 'sales', 'viewer'] },
+  { name: 'Interactions', href: '/interactions', icon: PhoneCall, roles: ['admin', 'sales', 'viewer'] },
+  { name: 'Call Planning', href: '/call-planning', icon: Calendar, roles: ['admin', 'sales', 'viewer'] },
+  { name: 'Performance', href: '/performance', icon: BarChart2, roles: ['admin','sales', 'viewer'] },
 ]
 
 export default function Sidebar({ userRole }: SidebarProps) {

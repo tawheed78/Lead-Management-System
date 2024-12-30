@@ -7,9 +7,10 @@ from sqlalchemy.exc import SQLAlchemyError
 from ..utils.utils import convert_to_date_and_time, has_permission
 
 from ..models.postgres_models import LeadModel
-from ..models.mongo_models import Interaction, InteractionResponse
+from ..models.mongo_models import Interaction, InteractionResponse, AddUpdateInteraction
 from ..configs.database.mongo_db import db_instance
 from ..configs.database.postgres_db import get_postgres_db
+
 
 router = APIRouter()
 
@@ -17,8 +18,8 @@ db_instance.set_collection("interaction_tracking_collection")
 collection = db_instance.get_collection()
 
 
-@router.post('/interactions/{lead_id}', response_model=Interaction)
-async def add_interaction(lead_id: int, interaction: Interaction, db: Session = Depends(get_postgres_db), permissions: bool = has_permission(["sales", "admin"])):
+@router.post('/interactions/{lead_id}', response_model=AddUpdateInteraction)
+async def add_interaction(lead_id: int, interaction: AddUpdateInteraction, db: Session = Depends(get_postgres_db), permissions: bool = has_permission(["sales", "admin"])):
     try:
         interaction = interaction.model_dump()
         db_lead = db.query(LeadModel).filter(LeadModel.id == lead_id).first()
@@ -40,12 +41,13 @@ async def add_interaction(lead_id: int, interaction: Interaction, db: Session = 
             db.refresh(db_lead)
         result = await collection.insert_one(interaction)
         return interaction
+    
     except SQLAlchemyError as e:
         db.rollback()
         raise HTTPException(status_code=500, detail=f"Database error: {e}")
     except Exception as e:
         raise HTTPException(status_code=400, detail=f"An error occurred: {e}")
-    
+
 
 @router.get('/interactions/{lead_id}', response_model=List[Interaction])
 async def get_interactions(lead_id: int, db: Session = Depends(get_postgres_db), permissions: bool = has_permission(["sales", "viewer", "admin"])):
@@ -75,8 +77,8 @@ async def get_all_interactions(db: Session = Depends(get_postgres_db), permissio
         raise HTTPException(status_code=500, detail=f"An error occurred: {e}")
 
 
-@router.put('/interactions/{lead_id}/{interaction_id}', response_model=Interaction)
-async def update_interaction(lead_id: str, interaction_id: str, interaction: Interaction, permissions: bool = has_permission(["sales", "admin"])):
+@router.put('/interactions/{lead_id}/{interaction_id}', response_model=AddUpdateInteraction)
+async def update_interaction(lead_id: str, interaction_id: str, interaction: AddUpdateInteraction, permissions: bool = has_permission(["sales", "admin"])):
     interaction = interaction.model_dump()
     try:
         result = await collection.update_one({"_id": ObjectId(interaction_id)}, {"$set": interaction})

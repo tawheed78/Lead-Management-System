@@ -8,6 +8,7 @@ from pymongo.errors import PyMongoError
 load_dotenv(dotenv_path="app/.env")
 
 CONNECTION_STRING = os.getenv('CONNECTION_STRING')
+CONNECTION_STRING_ATLAS = os.getenv('CONNECTION_STRING_ATLAS')
 
 INTERACTION_AND_PERFORMANCE_DB = os.getenv('INTERACTION_AND_PERFORMANCE_DB')
 INTERACTION_COLLECTION = os.getenv('INTERACTION_COLLECTION')
@@ -18,7 +19,7 @@ class MongoDbDatabase:
     """
     A class to interact with MongoDB for URL shortening service.
     """
-    def __init__(self, database_name, connection_string=CONNECTION_STRING):
+    def __init__(self, database_name, connection_string=CONNECTION_STRING_ATLAS):
         """
         Initializes the MongoDbDatabase instance and establishes a connection to the MongoDB server.
 
@@ -38,23 +39,6 @@ class MongoDbDatabase:
             MongoDbDatabase._is_initialized = True
         except PyMongoError as e:
             raise e
-    # def __init__(self, database_name, connection_string=CONNECTION_STRING):
-    #     """
-    #     Initializes the MongoDbDatabase instance and establishes a connection to the MongoDB server.
-
-    #     Args:
-    #         database_name (str): The name of the database.
-    #         collection_name (str): The name of the collection.
-    #         connection_string (str): The connection string to MongoDB.
-    #     """
-    #     self.connection_string = connection_string
-    #     try:
-    #         self.client = AsyncIOMotorClient(connection_string)
-    #         self.database_name = database_name
-    #         self.db = self.client[self.database_name]
-    #         self.collection = self.db[collection_name]
-    #     except PyMongoError as e:
-    #         raise e
 
     def get_db(self):
         """
@@ -87,11 +71,7 @@ def get_mongo_instance(database_name):
     global _instance
     if _instance is None:
         _instance = MongoDbDatabase(database_name)
+        print('hi')
     return _instance
 
-# Initialize the db_instance with a default collection
-# db_instance = MongoDbDatabase(
-#     database_name="lead_management_database",
-#     collection_name="default_collection"
-#     )
 mongo_db = get_mongo_instance(INTERACTION_AND_PERFORMANCE_DB)

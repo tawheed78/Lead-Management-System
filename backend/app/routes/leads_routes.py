@@ -5,7 +5,7 @@ from sqlalchemy.exc import SQLAlchemyError
 from ..services.lead_service import create_new_lead, get_lead_by_id, update_lead_by_id, delete_lead_by_id
 from ..models.postgres_models import LeadModel
 from ..configs.database.postgres_db import get_postgres_db
-from ..schemas.schemas import Lead, LeadList, LeadCreateUpdate
+from ..schemas.postgres_schemas import Lead, LeadList, LeadCreateUpdate
 from ..utils.utils import has_permission
 
 router = APIRouter()

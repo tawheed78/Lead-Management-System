@@ -4,7 +4,7 @@ from sqlalchemy.orm import Session
 from sqlalchemy.exc import SQLAlchemyError
 from ..models.postgres_models import LeadModel, PointOfContactModel
 from ..configs.database.postgres_db import get_postgres_db
-from ..schemas.schemas import POC, POCList
+from ..schemas.postgres_schemas import POC, POCList
 from ..utils.utils import has_permission
 from ..services.point_of_contact_service import add_poc_to_lead,get_all_pocs,get_pocs_by_lead_id,update_poc_by_lead_id,delete_poc_by_lead_id
 

@@ -3,7 +3,7 @@ from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
 from ..utils.utils import decode_token
 from ..configs.database.postgres_db import get_postgres_db
 from ..models.postgres_models import UserModel
-from ..schemas.schemas import UserCreate
+from ..schemas.postgres_schemas import UserCreate
 from ..services.user_service import create_user, authenticate_user, create_access_token_for_user
 
 router = APIRouter()

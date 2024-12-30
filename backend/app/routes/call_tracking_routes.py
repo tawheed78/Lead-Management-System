@@ -3,7 +3,7 @@ from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 from ..utils.utils import has_permission
 from ..configs.database.postgres_db import get_postgres_db
-from ..schemas.schemas import CallCreate, CallUpdate, CallTodayResponse
+from ..schemas.postgres_schemas import CallCreate, CallUpdate, CallTodayResponse
 from ..services.call_tracking_service import add_call_to_lead,update_frequency,update_log,get_calls_today,get_all_calls,delete_call_with_id
 
 router = APIRouter()

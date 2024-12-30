@@ -47,13 +47,3 @@ app.include_router(performance_tracking_router, prefix="/api/performance", tags=
 @app.get("/")
 async def root():
     return {"message": "Welcome to ..."}
-
-
-
-# try:
-#     create_database_if_not_exists()
-#     print(f"Connecting to database")
-#     Base.metadata.create_all(bind=engine)
-#     print("Tables created successfully.")
-# except Exception as e:
-#     print(f"Error during setup: {e}")

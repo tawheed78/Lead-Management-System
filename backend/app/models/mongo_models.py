@@ -1,8 +1,8 @@
 "Model Configuration Module for MongoDB"
 
+from datetime import datetime
 from typing import List, Optional
 from enum import Enum
-from datetime import datetime
 from bson import ObjectId
 from pydantic import BaseModel
 
@@ -11,6 +11,12 @@ class FollowUp(str, Enum):
     "Enum Class for follow-up status"
     YES = "Yes"
     NO = "No"
+
+class Order(BaseModel):
+    "Order Model"
+    item: str
+    quantity: int
+    price: float
 
 class InteractionType(str, Enum):
     "Enum Class for interaction type"
@@ -28,19 +34,11 @@ class InteractionType(str, Enum):
     ORDER_DELIVERY = "Order Delivery"
     OTHER = "Other"
 
-class Order(BaseModel):
-    "Order Model"
-    item: str
-    quantity: int
-    price: float
-
-
 class Interaction(BaseModel):
     "Interaction Model"
     lead_id: int
     call_id: Optional[int] = None
     interaction_type: InteractionType
-    interaction_date: str
     order: Optional[List[Order]] = None
     interaction_notes: Optional[str] = None
     follow_up: FollowUp
@@ -50,9 +48,14 @@ class Interaction(BaseModel):
             ObjectId: str,  # Convert ObjectId to string for serialization
         }
 
+class AddUpdateInteraction(Interaction):
+    interaction_date: datetime
+
 class InteractionResponse(Interaction):
     id: str
     lead_name: str
+    interaction_date: str
+    
 
 class Performance(BaseModel):
     id: int

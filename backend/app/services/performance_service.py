@@ -1,12 +1,15 @@
+import os
+from dotenv import load_dotenv
 from ..utils.utils import convert_to_date_and_time
-from ..configs.database.mongo_db import db_instance
+from ..configs.database.mongo_db import mongo_db
 from sqlalchemy.orm import Session
 from ..models.postgres_models import LeadModel
 
+load_dotenv(dotenv_path="app/.env")
 
-db_instance.set_collection("interaction_tracking_collection")
-collection = db_instance.get_collection()
-
+INTERACTION_COLLECTION = os.getenv('INTERACTION_COLLECTION')
+mongo_db.set_collection(INTERACTION_COLLECTION)
+collection = mongo_db.get_collection()
 
 async def get_performance_data(pipeline, db: Session, limit):
     performance_data = await collection.aggregate(pipeline).to_list(length=limit)

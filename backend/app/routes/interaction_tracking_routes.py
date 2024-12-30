@@ -1,3 +1,5 @@
+import os
+from dotenv import load_dotenv
 from datetime import datetime
 from typing import List
 from bson import ObjectId
@@ -5,17 +7,18 @@ from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 from sqlalchemy.exc import SQLAlchemyError
 from ..utils.utils import convert_to_date_and_time, has_permission
-
 from ..models.postgres_models import LeadModel
 from ..models.mongo_models import Interaction, InteractionResponse, AddUpdateInteraction
-from ..configs.database.mongo_db import db_instance
+from ..configs.database.mongo_db import mongo_db
 from ..configs.database.postgres_db import get_postgres_db
 
+load_dotenv(dotenv_path="app/.env")
+
+INTERACTION_COLLECTION = os.getenv('INTERACTION_COLLECTION')
+mongo_db.set_collection(INTERACTION_COLLECTION)
+collection = mongo_db.get_collection()
 
 router = APIRouter()
-
-db_instance.set_collection("interaction_tracking_collection")
-collection = db_instance.get_collection()
 
 
 @router.post('/interactions/{lead_id}', response_model=AddUpdateInteraction)

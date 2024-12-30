@@ -4,7 +4,7 @@ from bson import ObjectId
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 from sqlalchemy.exc import SQLAlchemyError
-from ..utils.utils import has_permission
+from ..utils.utils import convert_to_date_and_time, has_permission
 
 from ..models.postgres_models import LeadModel
 from ..models.mongo_models import Interaction, InteractionResponse
@@ -65,6 +65,8 @@ async def get_all_interactions(db: Session = Depends(get_postgres_db), permissio
         lead_dict = {lead.id: lead.name for lead in leads}
         result = []
         for interaction in interactions:
+            datetime_object = interaction["interaction_date"]
+            interaction["interaction_date"] = convert_to_date_and_time(datetime_object)
             interaction['id'] = str(interaction["_id"])
             interaction["lead_name"] = lead_dict.get(interaction["lead_id"], "Unknown")
             result.append(interaction)

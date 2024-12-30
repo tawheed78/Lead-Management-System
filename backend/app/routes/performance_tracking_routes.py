@@ -1,12 +1,13 @@
 from datetime import datetime, timedelta
 from typing import List
 from fastapi import APIRouter,Depends
-from ..utils.utils import has_permission
-from ..models.mongo_models import Interaction, Performance
+from ..utils.utils import has_permission, convert_to_date_and_time
+from ..models.mongo_models import Performance
 from ..configs.database.mongo_db import db_instance
 from ..configs.database.postgres_db import get_postgres_db
 from sqlalchemy.orm import Session
 from ..models.postgres_models import LeadModel
+
 
 
 router = APIRouter()
@@ -154,12 +155,14 @@ async def get_performance_data(pipeline, db: Session, limit):
     lead_dict = {lead.id: lead.name for lead in leads}
     response_data = []
     for performance in performance_data:
+        datetime_object = performance["last_interaction_date"]
+        datetime_object = convert_to_date_and_time(datetime_object)
         response_data.append({
             "id": performance["_id"],
             "order_count": performance["order_count"],
             "total_order_value": performance["total_order_value"],
             "avg_order_value": performance["avg_order_value"],
-            "last_interaction_date": performance["last_interaction_date"],
+            "last_interaction_date": datetime_object,
             "lead_name": lead_dict.get(performance["_id"], "Unknown"),
         })
     return response_data

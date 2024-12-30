@@ -40,14 +40,13 @@ class Interaction(BaseModel):
     lead_id: int
     call_id: Optional[int] = None
     interaction_type: InteractionType
-    interaction_date: datetime
+    interaction_date: str
     order: Optional[List[Order]] = None
     interaction_notes: Optional[str] = None
     follow_up: FollowUp
     class Config:
         "Pydantic Configuration"
         json_encoders = {
-            datetime: lambda v: v.isoformat(),
             ObjectId: str,  # Convert ObjectId to string for serialization
         }
 
@@ -60,5 +59,5 @@ class Performance(BaseModel):
     order_count: int
     total_order_value: float
     avg_order_value: float
-    last_interaction_date: datetime
+    last_interaction_date: str
     lead_name: str

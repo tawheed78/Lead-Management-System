@@ -75,3 +75,8 @@ def convert_to_ist(call_time, lead_timezone):
     naive_ist_time = ist_time.replace(tzinfo=None)
     return naive_ist_time
     
+def convert_to_date_and_time(datetime_iso):
+    iso_string = str(datetime_iso)
+    date_time_obj = datetime.fromisoformat(iso_string)
+    formatted_date = date_time_obj.strftime("%Y-%m-%d %I:%M %p").lower()
+    return formatted_date

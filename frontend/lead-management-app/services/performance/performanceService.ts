@@ -1,3 +1,5 @@
+import {formatDate} from '@/app/config'
+
 export interface PerformanceData {
   id: string
   order_count: number
@@ -12,6 +14,11 @@ export interface ChartData {
   orders: number
   totalValue: number
   avgValue: number
+}
+
+export interface LineChartData {
+  date: string
+  orders: number
 }
 
 export const fetchData = async (url: string, token: string, onSuccess: (data: PerformanceData[]) => void) => {
@@ -44,4 +51,13 @@ export const prepareChartData = (data: PerformanceData[]) => {
     totalValue: item.total_order_value,
     avgValue: item.avg_order_value,
   }))
+}
+
+export const prepareLineChartData = (data: PerformanceData[]) => {
+  return data
+    .sort((a, b) => new Date(a.last_interaction_date).getTime() - new Date(b.last_interaction_date).getTime()) // Sort by date
+    .map(item => ({
+      date: formatDate(item.last_interaction_date),
+      orders: item.order_count,
+    }));
 }

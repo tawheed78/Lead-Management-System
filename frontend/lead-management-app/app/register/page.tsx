@@ -8,7 +8,7 @@ import { Input } from '@/components/ui/input'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Label } from '@/components/ui/label'
-import config from '@/app/config'
+import {config} from '@/app/config'
 
 export default function Register() {
   const [full_name, setFullName] = useState('')
@@ -30,9 +30,6 @@ export default function Register() {
       })
       if (response.ok) {
         const data = await response.json()
-        console.log('Registration successful:', data)
-        // Simulate setting a token after successful registration
-        //document.cookie = `token=${data.token}; path=/`
         router.push('/')
       } else {
         console.error('Registration failed:', response.statusText)

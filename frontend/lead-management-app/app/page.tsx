@@ -42,10 +42,11 @@ export default function Dashboard() {
     loadData()
   }, [])
 
+
   if (loading) {
     return <div>Loading...</div>
   }
-  
+
   return (
     <div className="space-y-6">
       <h2 className="text-2xl font-bold text-gray-800">Dashboard</h2>
@@ -95,12 +96,12 @@ export default function Dashboard() {
             </Table>
           </DialogContent>
         </Dialog>
-        <Card>
+        {/* <Card>
           <div className="p-4">
             <h3 className="font-semibold text-lg mb-2">Orders This Week</h3>
             <p className="text-3xl font-bold">42</p>
           </div>
-        </Card>
+        </Card> */}
       </div>
     </div>
   )

@@ -6,10 +6,14 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { Bar, BarChart, ResponsiveContainer, XAxis, YAxis } from 'recharts'
+import { Bar, BarChart, LineChart, Line, ResponsiveContainer, XAxis, YAxis, CartesianGrid, Tooltip } from 'recharts'
 import { fetchLeads } from '@/services/calls/callService'
-import { PerformanceData, ChartData, fetchData, calculateTotals, prepareChartData} from '@/services/performance/performanceService'
+import { PerformanceData, ChartData, fetchData, calculateTotals, prepareChartData, prepareLineChartData} from '@/services/performance/performanceService'
 
+interface LineChartData {
+  date: string
+  orders: number
+}
 
 export default function Performance() {
   const { user, loading } = useAuth('admin')
@@ -20,6 +24,7 @@ export default function Performance() {
   const [totals, setTotals] = useState({ totalOrders: 0, averageOrderValue: 0, totalOrderValue: 0 })
   const [wellPerformingChartData, setWellPerformingChartData] = useState<ChartData[]>([])
   const [underPerformingChartData, setUnderPerformingChartData] = useState<ChartData[]>([])
+  const [lineChartData, setLineChartData] = useState<LineChartData[]>([])
   const [searchQuery, setSearchQuery] = useState('')
 
   const token = localStorage.getItem('token')
@@ -41,6 +46,8 @@ export default function Performance() {
         setPerformanceData(data)
         setFilteredData(data)
         calculateTotals(data, setTotals)
+        const lineChartData = prepareLineChartData(data)
+        setLineChartData(lineChartData)
       })
       fetchData('http://127.0.0.1:8000/api/performance/well-performing', token, (data) => {
         setWellPerformingChartData(prepareChartData(data))
@@ -61,7 +68,7 @@ export default function Performance() {
   if (loading) {
     return <div>Loading...</div>
   }
-
+  
   return (
     <div className="space-y-6">
       <h2 className="text-2xl font-bold text-gray-800">Performance Tracking</h2>
@@ -128,6 +135,22 @@ export default function Performance() {
               <YAxis stroke="#888888" fontSize={12} tickLine={false} axisLine={false} tickFormatter={(value) => `${value}`} />
               <Bar dataKey="orders" fill="#ff0000" radius={[4, 4, 0, 0]} />
             </BarChart>
+          </ResponsiveContainer>
+        </CardContent>
+      </Card>
+      <Card className="col-span-4">
+        <CardHeader>
+          <CardTitle>Orders Over Time</CardTitle>
+        </CardHeader>
+        <CardContent className="pl-2">
+          <ResponsiveContainer width="100%" height={350}>
+            <LineChart data={lineChartData}>
+              <CartesianGrid strokeDasharray="3 3" />
+              <XAxis dataKey="date" />
+              <YAxis />
+              <Tooltip />
+              <Line type="monotone" dataKey="orders" stroke="#8884d8" />
+            </LineChart>
           </ResponsiveContainer>
         </CardContent>
       </Card>

@@ -71,7 +71,6 @@ export default function Interactions() {
       if (response.ok) {
         const data = await response.json()
         setInteractions(data)
-        console.log(data)
       } else {
         console.error('Failed to fetch interactions')
       }
@@ -91,7 +90,6 @@ export default function Interactions() {
       if (response.ok) {
         const data = await response.json()
         setLeads(data)
-        // console.log(data)
       } else {
         console.error('Failed to fetch leads')
       }
@@ -144,7 +142,6 @@ export default function Interactions() {
       })
       if (response.ok) {
         const addedInteraction = await response.json()
-        console.log(addedInteraction)
         setInteractions([...interactions, addedInteraction])
         setNewInteraction({lead_id:'', interaction_type: '', interaction_date: '', order: [], interaction_notes: '', follow_up: '' })
         setIsAddModalOpen(false)
@@ -165,7 +162,6 @@ export default function Interactions() {
   const handleUpdateInteraction = async () => {
     if (editingInteraction) {
       try {
-        console.log('hi')
         const token = localStorage.getItem('token')
         const response = await fetch(`http://127.0.0.1:8000/api/interactions/${editingInteraction.lead_id}/${editingInteraction.id}`, {
           method: 'PUT',

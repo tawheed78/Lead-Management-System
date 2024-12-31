@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
+import {config} from '@/app/config'
 
 type Role = 'admin' | 'sales' | 'viewer'
 
@@ -23,7 +24,7 @@ export function useAuth(requiredRole?: Role) {
           throw new Error('No token found');
         }
         // Fetch user details from backend like role, username.
-        const response = await fetch('http://127.0.0.1:8000/api/user/auth/me', {
+        const response = await fetch(`${config.BASE_URL}/user/auth/me`, {
           method: 'GET',
           headers: {
             Authorization: `Bearer ${token}`,

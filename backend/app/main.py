@@ -1,4 +1,5 @@
 from fastapi import FastAPI
+from mangum import Mangum # type: ignore
 from fastapi.middleware.cors import CORSMiddleware
 from starlette.status import HTTP_404_NOT_FOUND, HTTP_400_BAD_REQUEST, HTTP_500_INTERNAL_SERVER_ERROR
 from .routes.leads_routes import router as lead_router
@@ -7,6 +8,7 @@ from .routes.call_tracking_routes import router as call_tracking_router
 from .routes.interaction_tracking_routes import router as interaction_tracking_router
 from .routes.performance_tracking_routes import router as performance_tracking_router
 from .routes.user_routes import router as user_router
+
 from app.exceptions.exception_handler import (
     not_found_error_handler,
     bad_request_error_handler,
@@ -17,10 +19,6 @@ from app.exceptions.exception_handler import (
 
 app = FastAPI()
 
-origins = [
-    "http://localhost:3000",
-    "http://localhost:8000",
-]
 
 app.add_middleware(
     CORSMiddleware,
@@ -47,3 +45,5 @@ app.include_router(performance_tracking_router, prefix="/api/performance", tags=
 @app.get("/")
 async def root():
     return {"message": "Welcome to ..."}
+
+handler = Mangum(app)

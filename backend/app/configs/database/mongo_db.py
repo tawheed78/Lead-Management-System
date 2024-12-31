@@ -71,7 +71,6 @@ def get_mongo_instance(database_name):
     global _instance
     if _instance is None:
         _instance = MongoDbDatabase(database_name)
-        print('hi')
     return _instance
 
 mongo_db = get_mongo_instance(INTERACTION_AND_PERFORMANCE_DB)

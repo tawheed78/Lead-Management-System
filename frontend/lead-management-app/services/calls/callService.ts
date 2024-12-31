@@ -1,6 +1,6 @@
 import internal from "stream"
+import {config} from '@/app/config'
 
-const BASE_URL = 'http://127.0.0.1:8000/api'
 
 export interface Lead {
   id: string
@@ -22,7 +22,7 @@ export interface Call {
 }
 
 export const fetchLeads = async (token: string) => {
-  const response = await fetch(`${BASE_URL}/lead`, {
+  const response = await fetch(`${config.BASE_URL}/lead`, {
     headers: {
       Authorization: `Bearer ${token}`,
     },
@@ -34,7 +34,7 @@ export const fetchLeads = async (token: string) => {
 }
 
 export const fetchPointOfContacts = async (token: string, lead_id: string) => {
-  const response = await fetch(`${BASE_URL}/lead/${lead_id}/pocs`, {
+  const response = await fetch(`${config.BASE_URL}/lead/${lead_id}/pocs`, {
     headers: {
       Authorization: `Bearer ${token}`,
     },
@@ -46,7 +46,7 @@ export const fetchPointOfContacts = async (token: string, lead_id: string) => {
 }
 
 export const fetchCalls = async (token: string) => {
-  const response = await fetch(`${BASE_URL}/calls`, {
+  const response = await fetch(`${config.BASE_URL}/calls`, {
     headers: {
       Authorization: `Bearer ${token}`,
     },
@@ -58,7 +58,7 @@ export const fetchCalls = async (token: string) => {
   return response.json()
 }
 export const addCall = async (newCall: Omit<Call, 'id'>, token: string) => {
-  const response = await fetch(`${BASE_URL}/lead/${newCall.lead_id}/call`, {
+  const response = await fetch(`${config.BASE_URL}/lead/${newCall.lead_id}/call`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
@@ -73,7 +73,7 @@ export const addCall = async (newCall: Omit<Call, 'id'>, token: string) => {
 }
 
 export const deleteCall = async (leadId: string, callId: string, token: string) => {
-  const response = await fetch(`${BASE_URL}/lead/${leadId}/call/${callId}`, {
+  const response = await fetch(`${config.BASE_URL}/lead/${leadId}/call/${callId}`, {
     method: 'DELETE',
     headers: {
       Authorization: `Bearer ${token}`,
@@ -85,7 +85,7 @@ export const deleteCall = async (leadId: string, callId: string, token: string) 
 }
 
 export const updateCallFrequency = async (leadId: string, callId: string, frequency: string, token: string) => {
-  const response = await fetch(`${BASE_URL}/lead/${leadId}/call/${callId}/frequency`, {
+  const response = await fetch(`${config.BASE_URL}/lead/${leadId}/call/${callId}/frequency`, {
     method: 'PUT',
     headers: {
       'Content-Type': 'application/json',
@@ -100,7 +100,7 @@ export const updateCallFrequency = async (leadId: string, callId: string, freque
 }
 
 export const updateCallLog = async (leadId: string, callId: string, token: string) => {
-  const response = await fetch(`${BASE_URL}/lead/${leadId}/call/${callId}/log`, {
+  const response = await fetch(`${config.BASE_URL}/lead/${leadId}/call/${callId}/log`, {
     method: 'PUT',
     headers: {
       'Content-Type': 'application/json',

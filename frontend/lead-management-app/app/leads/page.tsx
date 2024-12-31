@@ -8,6 +8,8 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog'
 import { Label } from '@/components/ui/label'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
+import {config} from '@/app/config'
+
 
 interface Lead {
   id: string
@@ -43,7 +45,7 @@ export default function Leads() {
   const [currentLeadId, setCurrentLeadId] = useState<string | null>(null)
   const [pointsOfContact, setPointsOfContact] = useState<PointOfContact[]>([])
   const [newPoc, setNewPoc] = useState<Omit<PointOfContact, 'id' | 'lead_id'>>({ name: '', role: '', email: '', phone_number: '' })
-  
+
   const token = localStorage.getItem('token')
 
   // useEffect(() => {
@@ -56,7 +58,7 @@ export default function Leads() {
 
   const fetchLeads = async () => {
     try {
-      const leadsResponse = await fetch('http://127.0.0.1:8000/api/lead', {
+      const leadsResponse = await fetch(`${config.BASE_URL}/lead`, {
         headers: {
         Authorization: `Bearer ${token}`,
         },
@@ -75,7 +77,7 @@ export default function Leads() {
 
   const fetchPointsOfContact = async (leadId: string) => {
     try {
-      const pointsOfContactResponse = await fetch(`http://127.0.0.1:8000/api/lead/${leadId}/pocs`, {
+      const pointsOfContactResponse = await fetch(`${config.BASE_URL}/lead/${leadId}/pocs`, {
         headers: {
         Authorization: `Bearer ${token}`,
         },
@@ -103,7 +105,7 @@ export default function Leads() {
 
   const handleAddLead = async () => {
     try {
-      const response = await fetch('http://127.0.0.1:8000/api/lead', {
+      const response = await fetch(`${config.BASE_URL}/lead`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -134,7 +136,7 @@ export default function Leads() {
   const handleUpdateLead = async () => {
     if (editingLead) {
       try {
-        const response = await fetch(`http://127.0.0.1:8000/api/lead/${editingLead.id}`, {
+        const response = await fetch(`${config.BASE_URL}/lead/${editingLead.id}`, {
           method: 'PUT',
           headers: {
             'Content-Type': 'application/json',
@@ -162,7 +164,7 @@ export default function Leads() {
 
   const handleDeleteLead = async (id: string) => {
     try {
-      const response = await fetch(`http://127.0.0.1:8000/api/lead/${id}`, {
+      const response = await fetch(`${config.BASE_URL}/lead/${id}`, {
         method: 'DELETE',
         headers: {
           Authorization: `Bearer ${token}`,
@@ -189,7 +191,7 @@ export default function Leads() {
     if (currentLeadId) {
       try {
         console.log('currentLeadId:', currentLeadId)
-        const response = await fetch(`http://127.0.0.1:8000/api/lead/${currentLeadId}/poc`, {
+        const response = await fetch(`${config.BASE_URL}/lead/${currentLeadId}/poc`, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
@@ -214,7 +216,7 @@ export default function Leads() {
   const handleDeletePoc = async (pocId: string) => {
     if (currentLeadId) {
       try {
-        const response = await fetch(`http://127.0.0.1:8000/api/lead/${currentLeadId}/poc/${pocId}`, {
+        const response = await fetch(`${config.BASE_URL}/lead/${currentLeadId}/poc/${pocId}`, {
           method: 'DELETE',
           headers: {
             Authorization: `Bearer ${token}`,

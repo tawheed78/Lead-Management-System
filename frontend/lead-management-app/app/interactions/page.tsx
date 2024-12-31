@@ -9,6 +9,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Label } from '@/components/ui/label'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { FaTrash, FaEdit, FaEye } from 'react-icons/fa';
+import {config} from '@/app/config'
 
 interface Lead {
   id: string
@@ -64,7 +65,7 @@ export default function Interactions() {
   const fetchInteractions = async () => {
     try {
       const token = localStorage.getItem('token')
-      const response = await fetch('http://127.0.0.1:8000/api/interactions', {
+      const response = await fetch(`${config.BASE_URL}/interactions`, {
         headers: {
           Authorization: `Bearer ${token}`,
         },
@@ -83,7 +84,7 @@ export default function Interactions() {
   const fetchLeads = async () => {
     try {
       const token = localStorage.getItem('token')
-      const response = await fetch('http://127.0.0.1:8000/api/lead', {
+      const response = await fetch(`${config.BASE_URL}/lead`, {
         headers: {
           Authorization: `Bearer ${token}`,
         },
@@ -131,7 +132,7 @@ export default function Interactions() {
   const handleAddInteraction = async () => {
     try {
       const token = localStorage.getItem('token')
-      const response = await fetch(`http://127.0.0.1:8000/api/interactions/${newInteraction.lead_id}`, {
+      const response = await fetch(`${config.BASE_URL}/interactions/${newInteraction.lead_id}`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -164,7 +165,7 @@ export default function Interactions() {
     if (editingInteraction) {
       try {
         const token = localStorage.getItem('token')
-        const response = await fetch(`http://127.0.0.1:8000/api/interactions/${editingInteraction.lead_id}/${editingInteraction.id}`, {
+        const response = await fetch(`${config.BASE_URL}/interactions/${editingInteraction.lead_id}/${editingInteraction.id}`, {
           method: 'PUT',
           headers: {
             'Content-Type': 'application/json',
@@ -193,7 +194,7 @@ export default function Interactions() {
   const handleDeleteInteraction = async (id: string) => {
     try {
       const token = localStorage.getItem('token')
-      const response = await fetch(`http://127.0.0.1:8000/api/interactions/${id}`, {
+      const response = await fetch(`${config.BASE_URL}/interactions/${id}`, {
         method: 'DELETE',
         headers: {
           Authorization: `Bearer ${token}`,
@@ -446,7 +447,7 @@ export default function Interactions() {
   )
 }
 
-
+// SEPARATE MODULE FOR MAIN FUNCTIONA ND HELPER FUNCTION IN PROGRESS
 // 'use client'
 
 // import { useState, useEffect } from 'react'

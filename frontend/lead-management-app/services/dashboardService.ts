@@ -1,3 +1,5 @@
+import {config} from '@/app/config'
+
 interface Lead {
   id: string
   name: string
@@ -13,12 +15,12 @@ export interface TodaysCalls {
 
 export async function fetchDashboardData(token: string) {
     try {
-        const leadsResponse = await fetch('http://127.0.0.1:8000/api/lead', {
+        const leadsResponse = await fetch(`${config.BASE_URL}/lead`, {
             headers: {
             Authorization: `Bearer ${token}`,
             },
         })
-        const callsResponse = await fetch('http://127.0.0.1:8000/api/calls/today', {
+        const callsResponse = await fetch(`${config.BASE_URL}/calls/today`, {
             headers: {
             Authorization: `Bearer ${token}`,
             },

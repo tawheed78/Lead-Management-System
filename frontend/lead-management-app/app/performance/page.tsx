@@ -9,6 +9,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Bar, BarChart, LineChart, Line, ResponsiveContainer, XAxis, YAxis, CartesianGrid, Tooltip } from 'recharts'
 import { fetchLeads } from '@/services/calls/callService'
 import { PerformanceData, ChartData, fetchData, calculateTotals, prepareChartData, prepareLineChartData} from '@/services/performance/performanceService'
+import {config} from '@/app/config'
 
 interface LineChartData {
   date: string
@@ -45,17 +46,17 @@ export default function Performance() {
 
   useEffect(() => {
     if (token) {
-      fetchData('http://127.0.0.1:8000/api/performance', token, (data) => {
+      fetchData(`${config.BASE_URL}/performance`, token, (data) => {
         setPerformanceData(data)
         setFilteredData(data)
         calculateTotals(data, setTotals)
         const lineChartData = prepareLineChartData(data)
         setLineChartData(lineChartData)
       })
-      fetchData('http://127.0.0.1:8000/api/performance/well-performing', token, (data) => {
+      fetchData(`${config.BASE_URL}/performance/well-performing`, token, (data) => {
         setWellPerformingChartData(prepareChartData(data))
       })
-      fetchData('http://127.0.0.1:8000/api/performance/under-performing', token, (data) => {
+      fetchData(`${config.BASE_URL}/performance/under-performing`, token, (data) => {
         setUnderPerformingChartData(prepareChartData(data))
       })
     }

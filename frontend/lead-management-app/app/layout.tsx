@@ -1,4 +1,4 @@
-
+'use client'
 import AppShell from '@/components/AppShell'
 import './globals.css'
 import { Inter } from 'next/font/google'

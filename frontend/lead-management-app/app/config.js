@@ -1,5 +1,5 @@
 const config = {
-    BASE_URL: 'http://13.60.181.166:8000/api',
+    BASE_URL: 'https://backend-ukh2.onrender.com/api',
   };
   
 

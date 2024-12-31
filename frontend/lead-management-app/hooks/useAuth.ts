@@ -1,3 +1,5 @@
+'use client'
+
 import { useEffect, useState } from 'react'
 import { usePathname, useRouter } from 'next/navigation'
 import {config} from '@/app/config'
@@ -22,7 +24,7 @@ export function useAuth(requiredRole?: Role) {
       setLoading(false);
       return;
     }
-    
+
     async function checkAuth() {
       try {
         const token = localStorage.getItem('token');

@@ -1,7 +1,7 @@
-import { Bell, LogOut } from 'lucide-react'
+import { LogOut } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { useRouter } from 'next/navigation'
-import { use } from 'react'
+// import { use } from 'react'
 import {User} from '@/app/layout'
 // export interface User {
 //   id: string

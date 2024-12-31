@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react'
 import { useAuth } from '@/hooks/useAuth'
 import { Card } from '@/components/ui/card'
-import { Button } from '@/components/ui/button'
+// import { Button } from '@/components/ui/button'
 
 import {
   Dialog,
@@ -17,7 +17,8 @@ import { TodaysCalls, fetchDashboardData } from '@/services/dashboardService'
 
 
 export default function Dashboard() {
-  const { user, loading, error } = useAuth('admin')
+  // const { user, loading, error } = useAuth('admin')
+  const { loading } = useAuth('admin')
   const [isCallsModalOpen, setIsCallsModalOpen] = useState(false)
   const [totalLeads, setTotalLeads] = useState(0)
   const [activeLeads, setActiveLeads] = useState(0)
@@ -74,7 +75,7 @@ export default function Dashboard() {
           </DialogTrigger>
           <DialogContent className="sm:max-w-[425px]">
             <DialogHeader>
-              <DialogTitle>Today's Calls</DialogTitle>
+              <DialogTitle>Today&apos;s Calls</DialogTitle>
             </DialogHeader>
             <Table>
               <TableHeader>

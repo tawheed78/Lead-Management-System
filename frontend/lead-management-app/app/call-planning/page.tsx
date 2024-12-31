@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react'
 import { useAuth } from '@/hooks/useAuth'
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
-import { Card } from '@/components/ui/card'
+// import { Card } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Label } from '@/components/ui/label'
 import { Input } from '@/components/ui/input'
@@ -14,7 +14,8 @@ import { Lead, Call, fetchLeads, fetchCalls, fetchPointOfContacts, updateCallLog
 
 
 export default function CallPlanning() {
-  const { user, loading } = useAuth('admin')
+  // const { user, loading } = useAuth('admin')
+  const { loading } = useAuth('admin')
   const [calls, setCalls] = useState<Call[]>([])
   const [leads, setLeads] = useState<Lead[]>([])
   const [pointOfContacts, setPointOfContacts] = useState<Lead[]>([])

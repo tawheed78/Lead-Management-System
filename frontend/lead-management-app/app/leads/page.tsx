@@ -32,7 +32,8 @@ interface PointOfContact {
 }
 
 export default function Leads() {
-  const { user, loading } = useAuth('admin')
+  // const { user, loading } = useAuth('admin')
+  const { loading } = useAuth('admin')
   const [leads, setLeads] = useState<Lead[]>([])
   const [newLead, setNewLead] = useState<Omit<Lead, 'id'>>({ name: '', status: '', address: '', zipcode: '', state: '', country: '', timezone: '', area_of_interest: '', created_at: '' })
   const [isAddLeadModalOpen, setIsAddLeadModalOpen] = useState(false)

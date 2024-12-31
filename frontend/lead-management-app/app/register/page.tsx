@@ -29,7 +29,8 @@ export default function Register() {
         body: JSON.stringify({ full_name, username, email, password, role }),
       })
       if (response.ok) {
-        const data = await response.json()
+        // const data = await response.json()
+        await response.json()
         router.push('/')
       } else {
         console.error('Registration failed:', response.statusText)

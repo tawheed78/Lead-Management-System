@@ -16,7 +16,9 @@ interface LineChartData {
 }
 
 export default function Performance() {
-  const { user, loading } = useAuth('admin')
+  // const { user, loading } = useAuth('admin')
+  // const [restaurants, setRestaurants] = useState([])
+  const { loading } = useAuth('admin')
   const [restaurants, setRestaurants] = useState([])
   const [totalRestaurants, setTotalRestaurants] = useState(0)
   const [performanceData, setPerformanceData] = useState<PerformanceData[]>([])

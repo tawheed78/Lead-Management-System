@@ -41,7 +41,7 @@ export default function Dashboard() {
     }
 
     loadData()
-  }, [])
+  }, [token])
 
 
   if (loading) {

@@ -46,9 +46,13 @@ export default function Leads() {
   
   const token = localStorage.getItem('token')
 
+  // useEffect(() => {
+  //   fetchLeads()
+  // }, [])
+
   useEffect(() => {
     fetchLeads()
-  }, [])
+  })
 
   const fetchLeads = async () => {
     try {

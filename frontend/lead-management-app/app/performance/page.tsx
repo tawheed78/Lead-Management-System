@@ -19,6 +19,7 @@ export default function Performance() {
   // const { user, loading } = useAuth('admin')
   // const [restaurants, setRestaurants] = useState([])
   const { loading } = useAuth('admin')
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [restaurants, setRestaurants] = useState([])
   const [totalRestaurants, setTotalRestaurants] = useState(0)
   const [performanceData, setPerformanceData] = useState<PerformanceData[]>([])

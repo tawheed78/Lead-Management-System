@@ -2,7 +2,7 @@
 import AppShell from '@/components/AppShell'
 import './globals.css'
 import { Inter } from 'next/font/google'
-import { useAuth } from '@/hooks/useAuth'
+//import { useAuth } from '@/hooks/useAuth'
 
 const inter = Inter({ subsets: ['latin'] })
 
@@ -17,13 +17,17 @@ export default function RootLayout({
 }: {
   children: React.ReactNode
 }) {
-  const { loading } = useAuth()
-  if (loading) {
-    return <div>Loading...</div>
-  }
+  // const { loading } = useAuth()
+  // console.log('lay')
+  // console.log('Loading:', loading);
+  // // console.log('User:', user);
+  // if (loading) {
+  //   return <div>Loading...</div>
+  // }
 
   return (
     <html lang="en">
+      <meta name="google" content="notranslate" />
       <body className={inter.className}>
       <AppShell>{children}</AppShell>
       </body>

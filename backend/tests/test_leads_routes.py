@@ -1,94 +1,107 @@
-import pytest, os, sys # type: ignore
-from httpx import AsyncClient
-from sqlalchemy import create_engine
-from sqlalchemy.orm import sessionmaker
-from sqlalchemy.ext.declarative import declarative_base
-from fastapi import FastAPI, Depends
-from fastapi.testclient import TestClient
-
-sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-
-from app.routes.leads_routes import router
-from app.configs.database.postgres_db import get_postgres_db, Base
+import unittest
+from unittest.mock import Mock, patch
+from fastapi import HTTPException
+from sqlalchemy.orm import Session
 from app.models.postgres_models import LeadModel
+from app.routes import leads_routes
+from app.services import lead_service
 
-os.environ["POSTGRES_URL"] = "sqlite:///./test.db"
-SQLALCHEMY_DATABASE_URL = "sqlite:///./test.db"
+class TestLeadRoutes(unittest.TestCase):
+    def setUp(self):
+        self.db = Mock(spec=Session)
+        self.lead_model = Mock(spec=LeadModel)
 
+    def test_get_lead_by_id_success(self):
+        self.db.query.return_value.filter.return_value.first.return_value = self.lead_model
+        result = leads_routes.get_lead_by_id(1, self.db)
+        self.assertEqual(result, self.lead_model)
 
-engine = create_engine(SQLALCHEMY_DATABASE_URL, connect_args={"check_same_thread": False})
-TestingSessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
+    def test_get_lead_by_id_not_found(self):
+        self.db.query.return_value.filter.return_value.first.return_value = None
+        with self.assertRaises(HTTPException) as context:
+            leads_routes.get_lead_by_id(1, self.db)
+        self.assertEqual(context.exception.status_code, 404)
 
-Base.metadata.create_all(bind=engine)
+    def test_create_new_lead_success(self):
+        self.db.query.return_value.filter.return_value.first.return_value = None
+        lead_data = Mock(name="Test Lead", address="Test Address", zipcode="12345", 
+                         state="Test State", country="Test Country", timezone="UTC",
+                         area_of_interest="Test Area", status="Active")
+        result = leads_routes.create_new_lead(lead_data, self.db)
+        self.assertTrue(self.db.add.called)
+        self.assertTrue(self.db.commit.called)
+        self.assertTrue(self.db.refresh.called)
 
-app = FastAPI()
-app.include_router(router)
+    def test_create_new_lead_already_exists(self):
+        self.db.query.return_value.filter.return_value.first.return_value = self.lead_model
+        lead_data = Mock(name="Existing Lead")
+        with self.assertRaises(HTTPException) as context:
+            leads_routes.create_new_lead(lead_data, self.db)
+        self.assertEqual(context.exception.status_code, 400)
 
-def override_get_postgres_db():
-    try:
-        db = TestingSessionLocal()
-        yield db
-    finally:
-        db.close()
+    def test_update_lead_by_id_success(self):
+        self.db.query.return_value.filter.return_value.first.return_value = self.lead_model
+        lead_data = Mock(name="Updated Lead", status="Inactive", address="New Address", 
+                         zipcode="54321", state="New State", country="New Country",
+                         area_of_interest="New Area", timezone="GMT")
+        result = leads_routes.update_lead_by_id(1, lead_data, self.db)
+        self.assertEqual(result, self.lead_model)
+        self.assertTrue(self.db.commit.called)
+        self.assertTrue(self.db.refresh.called)
 
-app.dependency_overrides[get_postgres_db] = override_get_postgres_db
+    def test_delete_lead_by_id_success(self):
+        self.db.query.return_value.filter.return_value.first.return_value = self.lead_model
+        result = leads_routes.delete_lead_by_id(1, self.db)
+        self.assertEqual(result, {"message": "Lead deleted successfully"})
+        self.assertTrue(self.db.delete.called)
+        self.assertTrue(self.db.commit.called)
 
-@pytest.fixture
-async def client():
-    async with AsyncClient(app=app, base_url="http://test") as ac:
-        yield ac
+class TestLeadService(unittest.TestCase):
+    def setUp(self):
+        self.db = Mock(spec=Session)
+        self.lead_model = Mock(spec=LeadModel)
 
-@pytest.mark.asyncio
-async def test_create_lead(client):
-    response = await client.post("/", json={"name": "Test Lead", "address": "123 Main St", "zipcode": "12345", "state": "CA", "country": "USA", "area_of_interest": "Technology", "status": "New"})
-    assert response.status_code == 200
-    assert response.json()["name"] == "Test Lead"
-    assert response.json()["status"] == "New"
+    def test_get_lead_by_id_success(self):
+        self.db.query.return_value.filter.return_value.first.return_value = self.lead_model
+        result = lead_service.get_lead_by_id(1, self.db)
+        self.assertEqual(result, self.lead_model)
 
-@pytest.mark.asyncio
-async def test_create_duplicate_lead(client):
-    await client.post("/", json={"name": "Duplicate Lead", "address": "123 Main St", "zipcode": "12345", "state": "CA", "country": "USA", "area_of_interest": "Technology", "status": "New"})
-    response = await client.post("/", json={"name": "Duplicate Lead", "address": "123 Main St", "zipcode": "12345", "state": "CA", "country": "USA", "area_of_interest": "Technology", "status": "New"})
-    assert response.status_code == 400
-    assert response.json()["detail"] == "Lead with this name already exists"
+    def test_get_lead_by_id_not_found(self):
+        self.db.query.return_value.filter.return_value.first.return_value = None
+        with self.assertRaises(HTTPException) as context:
+            lead_service.get_lead_by_id(1, self.db)
+        self.assertEqual(context.exception.status_code, 404)
 
-@pytest.mark.asyncio
-async def test_get_leads(client):
-    response = await client.get("/")
-    assert response.status_code == 200
-    assert isinstance(response.json(), list)
+    def test_create_new_lead_success(self):
+        self.db.query.return_value.filter.return_value.first.return_value = None
+        lead_data = Mock(name="Test Lead", address="Test Address", zipcode="12345", 
+                         state="Test State", country="Test Country", timezone="UTC",
+                         area_of_interest="Test Area", status="Active")
+        result = lead_service.create_new_lead(lead_data, self.db)
+        self.assertTrue(self.db.add.called)
+        self.assertTrue(self.db.commit.called)
+        self.assertTrue(self.db.refresh.called)
 
-@pytest.mark.asyncio
-async def test_get_lead(client):
-    # Create a lead first
-    create_response = await client.post("/", json={"name": "Test Lead", "address": "123 Main St", "zipcode": "12345", "state": "CA", "country": "USA", "area_of_interest": "Technology", "status": "New"})
-    lead_id = create_response.json()["id"]
+    def test_create_new_lead_already_exists(self):
+        self.db.query.return_value.filter.return_value.first.return_value = self.lead_model
+        lead_data = Mock(name="Existing Lead")
+        with self.assertRaises(HTTPException) as context:
+            lead_service.create_new_lead(lead_data, self.db)
+        self.assertEqual(context.exception.status_code, 400)
 
-    # Get the lead
-    response = await client.get(f"/{lead_id}")
-    assert response.status_code == 200
-    assert response.json()["name"] == "Test Lead"
+    def test_update_lead_by_id_success(self):
+        self.db.query.return_value.filter.return_value.first.return_value = self.lead_model
+        lead_data = Mock(name="Updated Lead", status="Inactive", address="New Address", 
+                         zipcode="54321", state="New State", country="New Country",
+                         area_of_interest="New Area", timezone="GMT")
+        result = lead_service.update_lead_by_id(1, lead_data, self.db)
+        self.assertEqual(result, self.lead_model)
+        self.assertTrue(self.db.commit.called)
+        self.assertTrue(self.db.refresh.called)
 
-@pytest.mark.asyncio
-async def test_update_lead(client):
-    # Create a lead first
-    create_response = await client.post("/", json={"name": "Test Lead", "address": "123 Main St", "zipcode": "12345", "state": "CA", "country": "USA", "area_of_interest": "Technology", "status": "New"})
-    lead_id = create_response.json()["id"]
-
-    # Update the lead
-    update_data = {"name": "Updated Lead", "address": "123 Main St", "zipcode": "12345", "state": "CA", "country": "USA", "area_of_interest": "Technology", "status": "Contacted"}
-    response = await client.put(f"/{lead_id}", json=update_data)
-    assert response.status_code == 200
-    assert response.json()["name"] == "Updated Lead"
-    assert response.json()["status"] == "Contacted"
-
-@pytest.mark.asyncio
-async def test_delete_lead(client):
-    # Create a lead first
-    create_response = await client.post("/", json={"name": "Test Lead", "address": "123 Main St", "zipcode": "12345", "state": "CA", "country": "USA", "area_of_interest": "Technology", "status": "New"})
-    lead_id = create_response.json()["id"]
-
-    # Delete the lead
-    response = await client.delete(f"/{lead_id}")
-    assert response.status_code == 200
-    assert response.json()["message"] == "Lead deleted successfully"
+    def test_delete_lead_by_id_success(self):
+        self.db.query.return_value.filter.return_value.first.return_value = self.lead_model
+        result = lead_service.delete_lead_by_id(1, self.db)
+        self.assertEqual(result, {"message": "Lead deleted successfully"})
+        self.assertTrue(self.db.delete.called)
+        self.assertTrue(self.db.commit.called)

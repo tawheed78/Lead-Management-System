@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { useRouter } from 'next/navigation'
+import { usePathname, useRouter } from 'next/navigation'
 import {config} from '@/app/config'
 
 type Role = 'admin' | 'sales' | 'viewer'
@@ -15,8 +15,14 @@ export function useAuth(requiredRole?: Role) {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const router = useRouter()
+  const pathname = usePathname();
 
   useEffect(() => {
+    if (pathname === '/login' || pathname === '/register') {
+      setLoading(false);
+      return;
+    }
+    
     async function checkAuth() {
       try {
         const token = localStorage.getItem('token');

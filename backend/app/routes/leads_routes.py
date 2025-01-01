@@ -6,7 +6,7 @@ from sqlalchemy.orm import Session
 from sqlalchemy.exc import SQLAlchemyError
 from ..models.postgres_models import LeadModel
 from ..configs.database.postgres_db import get_postgres_db
-from ..schemas.postgres_schemas import Lead, LeadList, LeadCreateUpdate
+from ..schemas.postgres_schemas import Lead, LeadResponse, LeadCreateUpdate
 from ..utils.utils import has_permission
 from ..services.lead_service import (
     create_new_lead, 
@@ -18,7 +18,7 @@ from ..services.lead_service import (
 router = APIRouter()
 
 
-@router.post('/', response_model=Lead)
+@router.post('/', response_model=LeadResponse)
 async def create_lead(
     lead: LeadCreateUpdate,
     db: Session = Depends(get_postgres_db),
@@ -27,11 +27,12 @@ async def create_lead(
     """Route to create a new lead."""
     try:
         return create_new_lead(lead, db)
+        
     except SQLAlchemyError as e:
         raise HTTPException(status_code=500, detail=f"Database error: {e}") from e
 
 
-@router.get('/', response_model=List[LeadList])
+@router.get('/', response_model=List[LeadResponse])
 async def get_all_leads(
     skip: int = 0,
     limit: int = 100,
@@ -58,7 +59,7 @@ async def get_lead(
         raise HTTPException(status_code=500, detail=f"Database error: {e}") from e
 
 
-@router.put('/{lead_id}', response_model=Lead)
+@router.put('/{lead_id}', response_model=LeadResponse)
 async def update_lead(
     lead_id: int,
     lead: LeadCreateUpdate,

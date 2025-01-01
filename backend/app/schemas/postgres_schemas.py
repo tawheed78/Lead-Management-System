@@ -45,7 +45,7 @@ class LeadCreateUpdate(Lead):
     timezone : str
     area_of_interest : str
 
-class LeadList(LeadCreateUpdate):
+class LeadResponse(LeadCreateUpdate):
     """Model for listing leads with ID and creation date."""
     id: int
     created_at: date   

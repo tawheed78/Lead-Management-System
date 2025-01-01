@@ -4,7 +4,6 @@ from sqlalchemy.orm import Session
 from fastapi import HTTPException
 from ..models.postgres_models import LeadModel
 
-
 def get_lead_by_id(lead_id: int, db: Session):
     """Retrieve a lead by its ID."""
     db_lead = db.query(LeadModel).filter(LeadModel.id == lead_id).first()

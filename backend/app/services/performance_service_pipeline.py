@@ -1,12 +1,18 @@
 """Pipelines for performance service."""
 
 from datetime import datetime, timedelta
+
+# Get the start date for the performance data and convert to str
 start_date = datetime.now() - timedelta(days=30)
+start_date_str = start_date.strftime("%Y-%m-%d")
+
+
 
 well_performing_pipeline = [
     {
         "$match": {
-            "interaction_date": {"$gte": start_date}
+            "interaction_date": {"$gte": start_date_str}
+            
         }
     },
     {
@@ -59,7 +65,13 @@ well_performing_pipeline = [
 under_performing_pipeline = [
     {
         "$match": {
-            "interaction_date": {"$gte": start_date}
+            "interaction_date": {"$gte": start_date_str}
+            
+        }
+    },
+    {
+        "$match": {
+            "interaction_date": {"$gte": start_date_str}
         }
     },
     {
@@ -121,7 +133,8 @@ under_performing_pipeline = [
 total_data_pipeline = [
     {
         "$match": {
-            "interaction_date": {"$gte": start_date}
+            "interaction_date": {"$gte": start_date_str}
+            
         }
     },
     {

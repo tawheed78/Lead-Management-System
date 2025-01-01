@@ -5,7 +5,7 @@ from typing import List, Optional
 from enum import Enum
 from bson import ObjectId
 from pydantic import BaseModel
-
+from datetime import date, time
 
 class FollowUp(str, Enum):
     "Enum Class for follow-up status"
@@ -48,15 +48,19 @@ class Interaction(BaseModel):
             ObjectId: str,
         }
 
+class NewInteraction(Interaction):
+    interaction_date: date
+    interaction_time: time
+
 class AddUpdateInteraction(Interaction):
     """Add/Update Interaction Model"""
-    interaction_date: datetime
+    interaction_date: date
+    interaction_time: time
 
-class InteractionResponse(Interaction):
+class InteractionResponse(NewInteraction):
     """Interaction Response Model"""
     id: str
     lead_name: str
-    interaction_date: str
     
 
 class Performance(BaseModel):

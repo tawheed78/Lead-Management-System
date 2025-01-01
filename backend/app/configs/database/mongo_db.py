@@ -37,7 +37,7 @@ class MongoDbDatabase:
             self.database_name = database_name
             self.db = self.client[self.database_name]
             self.collection = None  # No default collection; set dynamically
-            MongoDbDatabase._is_initialized = True
+            MongoDbDatabase._is_initialized = True            
         except PyMongoError as e:
             raise e
 
@@ -55,6 +55,7 @@ class MongoDbDatabase:
             collection_name (str): The name of the new collection.
         """
         self.collection = self.db[collection_name]
+        self.create_indexes()
 
     def get_collection(self):
         """
@@ -63,6 +64,26 @@ class MongoDbDatabase:
         if self.collection is None:
             raise ValueError("Collection not set. Use 'set_collection()' first.")
         return self.collection
+
+    def create_indexes(self):
+        """
+        Creates indexes on the current collection based on predefined configurations.
+        """
+        if self.collection is None:
+            raise ValueError("Collection not set. Use 'set_collection()' first.")
+
+        index_configs = [
+            [('lead_id', 1)],
+            [('interaction_date', 1)],
+            [('order.price', 1), ('order.quantity', 1)]
+        ]
+
+        try:
+            for index_config in index_configs:
+                self.collection.create_index(index_config)
+                print(f"Created index: {index_config}")
+        except PyMongoError as e:
+            print(f"Error creating indexes: {e}")
 
     
 

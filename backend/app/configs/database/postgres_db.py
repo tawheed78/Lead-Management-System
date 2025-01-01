@@ -21,16 +21,17 @@ engine = create_engine(POSTGRES_URL_RDS)
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 Base = declarative_base()
 
-
 def create_database_if_not_exists():
     "Function to create the database if it does not exist"
     try:
         with engine_without_db.connect() as conn:
+            conn.execute(text("COMMIT"))  # Ensure we're not in a transaction
             result = conn.execute(
                 text(f"SELECT 1 FROM pg_database WHERE datname = '{DB_NAME}'")
             ).fetchone()
             if not result:
                 conn.execute(text(f"CREATE DATABASE {DB_NAME}"))
+                conn.execute(text("COMMIT"))  # Commit the database creation
                 print(f"Database '{DB_NAME}' created successfully.")
             else:
                 print(f"Database '{DB_NAME}' already exists.")

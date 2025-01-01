@@ -82,6 +82,9 @@ class CallUpdate(BaseModel):
     """Model for updating call details."""
     frequency: int
 
+class CallResponse(CallCreate):
+    pass
+
 class CallTodayResponse(CallCreate):
     """Response model for today's calls."""
     id: int

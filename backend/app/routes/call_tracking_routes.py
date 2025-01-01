@@ -5,7 +5,7 @@ from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 from ..utils.utils import has_permission
 from ..configs.database.postgres_db import get_postgres_db
-from ..schemas.postgres_schemas import CallCreate, CallUpdate, CallTodayResponse
+from ..schemas.postgres_schemas import CallCreate, CallUpdate, CallTodayResponse, CallResponse
 from ..services.call_tracking_service import (
     add_call_to_lead,
     update_frequency,
@@ -31,7 +31,7 @@ async def add_call(
         raise HTTPException(status_code=500, detail=f"Unexpected error: {e}") from e
 
 
-@router.put('/lead/{lead_id}/call/{call_id}/frequency')
+@router.put('/lead/{lead_id}/call/{call_id}/frequency', response_model=CallCreate)
 async def update_call_frequency(
     lead_id: int,
     call_id: int,

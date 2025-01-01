@@ -34,7 +34,6 @@ interface PointOfContact {
 }
 
 export default function Leads() {
-  // const { user, loading } = useAuth('admin')
   const { loading } = useAuth('admin')
   const [leads, setLeads] = useState<Lead[]>([])
   const [newLead, setNewLead] = useState<Omit<Lead, 'id'>>({ name: '', status: '', address: '', zipcode: '', state: '', country: '', timezone: '', area_of_interest: '', created_at: '' })
@@ -48,13 +47,9 @@ export default function Leads() {
 
   const token = localStorage.getItem('token')
 
-  // useEffect(() => {
-  //   fetchLeads()
-  // }, [])
-
   useEffect(() => {
     fetchLeads()
-  })
+  }, [])
 
   const fetchLeads = async () => {
     try {
@@ -85,7 +80,6 @@ export default function Leads() {
       if (pointsOfContactResponse.ok) {
         const pointsOfContactData = await pointsOfContactResponse.json()
         setPointsOfContact(pointsOfContactData)
-        console.log('Leads data:', pointsOfContactData) 
       } else {
           throw new Error('Failed to fetch dashboard data')
         }
@@ -116,10 +110,9 @@ export default function Leads() {
   
       if (response.ok) {
         const addedLead: Lead = await response.json()
-        setLeads([...leads, addedLead])
         setNewLead({ name: '', status: '', address: '', zipcode: '', state: '', country: '', timezone: '', area_of_interest: '', created_at: '' })
+        setLeads([...leads, addedLead])
         setIsAddLeadModalOpen(false)
-        // window.location.reload()
       } else {
         console.error('Failed to add lead')
       }

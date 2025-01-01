@@ -22,39 +22,54 @@ interface Order {
   price: string
 }
 
-interface Interaction {
-  id: string
-  lead_id: string
-  lead_name: string
-  call_id: string
-  interaction_type: string
-  interaction_date: string
-  order: Order[] 
-  interaction_notes: string
-}
+// interface Interaction {
+//   id: string
+//   lead_id: string
+//   lead_name: string
+//   call_id: string
+//   interaction_type: string
+//   interaction_date: string
+//   order: Order[] 
+//   interaction_notes: string
+// }
 
-interface AddInteraction {
+// interface AddInteraction {
+//   id: string
+//   lead_id: string
+//   lead_name: string
+//   interaction_type: string
+//   interaction_date: string
+//   order: Order[] 
+//   interaction_notes: string
+//   follow_up: string
+// }
+
+interface NewInteraction {
   id: string
   lead_id: string
   lead_name: string
   interaction_type: string
   interaction_date: string
+  interaction_time: string
   order: Order[] 
   interaction_notes: string
   follow_up: string
 }
 
+
 export default function Interactions() {
-  // const { user, loading } = useAuth('admin')
+  ///// const { user, loading } = useAuth('admin')
   const {loading } = useAuth('admin')
-  const [interactions, setInteractions] = useState<Interaction[]>([])
+  // const [interactions, setInteractions] = useState<Interaction[]>([])
+  const [interactions, setInteractions] = useState<NewInteraction[]>([])
   const [leads, setLeads] = useState<Lead[]>([])
-  const [newInteraction, setNewInteraction] = useState<Omit<AddInteraction, 'id' | 'lead_name'>>({ lead_id: '', interaction_type: '', interaction_date: '', order: [], interaction_notes: '', follow_up: '' })
+  // const [newInteraction, setNewInteraction] = useState<Omit<AddInteraction, 'id' | 'lead_name'>>({ lead_id: '', interaction_type: '', interaction_date: '', order: [], interaction_notes: '', follow_up: '' })
+  const [newInteraction, setNewInteraction] = useState<Omit<NewInteraction, 'id' | 'lead_name'>>({ lead_id: '', interaction_type: '', interaction_date: '', interaction_time: '', order: [], interaction_notes: '', follow_up: '' })
   const [isAddModalOpen, setIsAddModalOpen] = useState(false)
   const [isEditModalOpen, setIsEditModalOpen] = useState(false)
-  const [editingInteraction, setEditingInteraction] = useState<Interaction | null>(null)
+  const [editingInteraction, setEditingInteraction] = useState<NewInteraction | null>(null)
   const [filterLead, setFilterLead] = useState<string>('all')
-  const [viewingInteraction, setViewingInteraction] = useState<Interaction | null>(null)
+  const [viewingInteraction, setViewingInteraction] = useState<NewInteraction | null>(null)
   const [isViewModalOpen, setIsViewModalOpen] = useState(false)
 
   useEffect(() => {
@@ -124,7 +139,7 @@ export default function Interactions() {
     setNewInteraction({ ...newInteraction, order: updatedOrders })
   }
 
-  const handleViewInteraction = (interaction: Interaction) => {
+  const handleViewInteraction = (interaction: NewInteraction) => {
     setViewingInteraction(interaction)
     setIsViewModalOpen(true)
   }
@@ -145,7 +160,7 @@ export default function Interactions() {
       if (response.ok) {
         const addedInteraction = await response.json()
         setInteractions([...interactions, addedInteraction])
-        setNewInteraction({lead_id:'', interaction_type: '', interaction_date: '', order: [], interaction_notes: '', follow_up: '' })
+        setNewInteraction({lead_id:'', interaction_type: '', interaction_date: '', interaction_time: '', order: [], interaction_notes: '', follow_up: '' })
         setIsAddModalOpen(false)
       } else {
         console.error('Failed to add interaction')
@@ -155,7 +170,7 @@ export default function Interactions() {
     }
   }
 
-  const handleEditInteraction = (interaction: Interaction) => {
+  const handleEditInteraction = (interaction: NewInteraction) => {
     setEditingInteraction(interaction)
     setIsEditModalOpen(true)
   }
@@ -264,6 +279,10 @@ export default function Interactions() {
                 <Input id="interaction_date" name="interaction_date" type="date" value={newInteraction.interaction_date} onChange={handleInputChange} className="col-span-3" />
               </div>
               <div className="grid grid-cols-4 items-center gap-4">
+                <Label htmlFor="interaction_time" className="text-right">Time</Label>
+                <Input id="interaction_time" name="interaction_time" type="time" value={newInteraction.interaction_time} onChange={handleInputChange} className="col-span-3" />
+              </div>
+              <div className="grid grid-cols-4 items-center gap-4">
                 <Label htmlFor="interaction_notes" className="text-right">Notes</Label>
                 <Input id="interaction_notes" name="interaction_notes" value={newInteraction.interaction_notes} onChange={handleInputChange} className="col-span-3" />
               </div>
@@ -315,6 +334,7 @@ export default function Interactions() {
             <TableHead>Lead</TableHead>
             <TableHead>Type</TableHead>
             <TableHead>Date</TableHead>
+            <TableHead>Time</TableHead>
             <TableHead>Notes</TableHead>
             <TableHead>Actions</TableHead>
           </TableRow>
@@ -325,6 +345,7 @@ export default function Interactions() {
               <TableCell>{interaction.lead_name}</TableCell>
               <TableCell>{interaction.interaction_type}</TableCell>
               <TableCell>{interaction.interaction_date}</TableCell>
+              <TableCell>{interaction.interaction_time}</TableCell>
               <TableCell>{interaction.interaction_notes}</TableCell>
               <TableCell>
                 <Button variant="outline" size="sm" className="mr-2" onClick={() => handleEditInteraction(interaction)}><FaEdit /></Button>
@@ -353,6 +374,10 @@ export default function Interactions() {
               <div className="grid grid-cols-4 items-center gap-4">
                 <Label className="text-right">Date: </Label>
                 <div className="col-span-3">{viewingInteraction.interaction_date}</div>
+              </div>
+              <div className="grid grid-cols-4 items-center gap-4">
+                <Label className="text-right">Time: </Label>
+                <div className="col-span-3">{viewingInteraction.interaction_time}</div>
               </div>
               <div className="grid grid-cols-4 items-center gap-4">
                 <Label className="text-right">Notes: </Label>
@@ -421,6 +446,10 @@ export default function Interactions() {
               <div className="grid grid-cols-4 items-center gap-4">
                 <Label htmlFor="editInteractionDate" className="text-right">Date</Label>
                 <Input id="editInteractionDate" name="interaction_date" type="date" value={editingInteraction.interaction_date} onChange={(e) => setEditingInteraction({ ...editingInteraction, interaction_date: e.target.value })} className="col-span-3" />
+              </div>
+              <div className="grid grid-cols-4 items-center gap-4">
+                <Label className="text-right">Time: </Label>
+                <div className="col-span-3">{editingInteraction.interaction_time}</div>
               </div>
               <div className="grid grid-cols-4 items-center gap-4">
                 <Label htmlFor="editInteractionNotes" className="text-right">Notes</Label>

@@ -48,6 +48,7 @@ export default function Performance() {
     if (token) {
       fetchData(`${config.BASE_URL}/performance`, token, (data) => {
         setPerformanceData(data)
+        console.log(data)
         setFilteredData(data)
         calculateTotals(data, setTotals)
         const lineChartData = prepareLineChartData(data)
@@ -72,7 +73,7 @@ export default function Performance() {
   if (loading) {
     return <div>Loading...</div>
   }
-  
+  console.log('performanceData:', performanceData)
   return (
     <div className="space-y-6">
       <h2 className="text-2xl font-bold text-gray-800">Performance Tracking</h2>

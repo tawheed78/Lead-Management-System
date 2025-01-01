@@ -9,6 +9,7 @@ from sqlalchemy.exc import ProgrammingError
 
 load_dotenv(dotenv_path="app/.env")
 
+# Load environment variables
 POSTGRES_URL = os.getenv('POSTGRES_URL',"sqlite:///./test.db")
 POSTGRES_URL_RDS = os.getenv('POSTGRES_URL_RDS')
 DB_NAME = os.getenv('POSTGRES_DB')

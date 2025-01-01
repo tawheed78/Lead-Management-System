@@ -1,5 +1,6 @@
-from datetime import datetime, timedelta
+"""Pipelines for performance service."""
 
+from datetime import datetime, timedelta
 start_date = datetime.now() - timedelta(days=30)
 
 well_performing_pipeline = [
@@ -30,8 +31,22 @@ well_performing_pipeline = [
         "$group": {
             "_id": "$lead_id",
             "order_count": {"$sum": {"$size": "$order_values"}},
-            "total_order_value": {"$sum": {"$reduce": {"input": "$order_values", "initialValue": 0, "in": {"$add": ["$$value", "$$this"]}}}},  # Sum of order values
-            "avg_order_value": {"$avg": {"$reduce": {"input": "$order_values", "initialValue": 0, "in": {"$add": ["$$value", "$$this"]}}}},  # Average order value
+            "total_order_value": {"$sum": {
+                "$reduce": {
+                    "input": "$order_values", "initialValue": 0, "in": {
+                        "$add": ["$$value", "$$this"]
+                        }
+                    }
+                }
+            },  # Sum of order values
+            "avg_order_value": {"$avg": {
+                "$reduce": {
+                    "input": "$order_values", "initialValue": 0, "in": {    # Average order value
+                        "$add": ["$$value", "$$this"]
+                        }
+                    }
+                }
+            },
             "last_interaction_date": {"$max": "$interaction_date"}
         }
     },
@@ -69,8 +84,22 @@ under_performing_pipeline = [
         "$group": {
             "_id": "$lead_id",
             "order_count": {"$sum": {"$size": "$order_values"}},
-            "total_order_value": {"$sum": {"$reduce": {"input": "$order_values", "initialValue": 0, "in": {"$add": ["$$value", "$$this"]}}}},  # Sum of order values
-            "avg_order_value": {"$avg": {"$reduce": {"input": "$order_values", "initialValue": 0, "in": {"$add": ["$$value", "$$this"]}}}},  # Average order value
+            "total_order_value": {"$sum": {
+                "$reduce": {
+                    "input": "$order_values", "initialValue": 0, "in": {
+                        "$add": ["$$value", "$$this"]
+                        }
+                    }
+                }
+            },  # Sum of order values
+            "avg_order_value": {"$avg": {
+                "$reduce": {
+                    "input": "$order_values", "initialValue": 0, "in": {    # Average order value
+                        "$add": ["$$value", "$$this"]
+                        }
+                    }
+                }
+            },
             "last_interaction_date": {"$max": "$interaction_date"}
         }
     },
@@ -122,8 +151,22 @@ total_data_pipeline = [
         "$group": {
             "_id": "$lead_id",
             "order_count": {"$sum": {"$size": "$order_values"}},
-            "total_order_value": {"$sum": {"$reduce": {"input": "$order_values", "initialValue": 0, "in": {"$add": ["$$value", "$$this"]}}}},
-            "avg_order_value": {"$avg": {"$reduce": {"input": "$order_values", "initialValue": 0, "in": {"$add": ["$$value", "$$this"]}}}},
+            "total_order_value": {"$sum": {
+                "$reduce": {
+                    "input": "$order_values", "initialValue": 0, "in": {
+                        "$add": ["$$value", "$$this"]
+                        }
+                    }
+                }
+            },
+            "avg_order_value": {
+                "$avg": {"$reduce": {
+                    "input": "$order_values", "initialValue": 0, "in": {
+                        "$add": ["$$value", "$$this"]
+                        }
+                    }
+                }
+            },
             "last_interaction_date": {"$max": "$interaction_date"}
         }
     }

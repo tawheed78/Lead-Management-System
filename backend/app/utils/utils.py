@@ -1,3 +1,5 @@
+"""Utility functions for the FastAPI application."""
+
 from typing import List
 from fastapi import Depends, HTTPException
 from fastapi.security import OAuth2PasswordBearer
@@ -18,38 +20,38 @@ ACCESS_TOKEN_EXPIRE_MINUTES=30
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
 pwd_context = CryptContext(schemes=["argon2"], deprecated="auto")
 
-# Hash Password
 def hash_password(password: str) -> str:
+    """Hash Password"""
     return pwd_context.hash(password)
 
-# Verify Password
 def verify_password(plain_password: str, hashed_password: str) -> bool:
+    """Verify Password"""
     return pwd_context.verify(plain_password, hashed_password)
 
-# Create JWT Token
 def create_access_token(data: dict, expires_delta: timedelta = None):
+    """Create JWT Token"""
     to_encode = data.copy()
     expire = datetime.now() + (expires_delta or timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES))
     to_encode.update({"exp": expire})
     return jwt.encode(to_encode, SECRET_KEY, algorithm=ALGORITHM)
 
-# Decode JWT Token
 def decode_token(token: str):
+    """Decode JWT Token"""
     try:
         payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
         return payload
     except JWTError:
         return None
 
-# Dependency to check user roles
-def get_current_user(token: str = Depends(oauth2_scheme)):
+def get_current_user(token: str = Depends(oauth2_scheme)):  
+    """Get the current user from the JWT token."""
     payload = decode_token(token)
     if not payload:
         raise HTTPException(status_code=401, detail="Invalid token")
     return payload
 
-
 def has_permission(required_roles: List[str]):
+    """Check if the user has the required roles to access the endpoint."""
     def permission_dependency(token: str = Depends(oauth2_scheme)):
         payload = decode_token(token)
         if not payload:
@@ -63,8 +65,8 @@ def has_permission(required_roles: List[str]):
         return True
     return Depends(permission_dependency)
 
-
 def convert_to_ist(call_time, lead_timezone):
+    """Convert to timezone of any country to IST"""
     call_time = datetime.strptime(call_time, "%Y-%m-%d %H:%M:%S")
     # Lead's local timezone
     local_tz = pytz.timezone(lead_timezone)

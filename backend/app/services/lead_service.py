@@ -1,15 +1,19 @@
+"""This module contains the service functions for the Lead model."""
+
 from sqlalchemy.orm import Session
 from fastapi import HTTPException
 from ..models.postgres_models import LeadModel
 
 
 def get_lead_by_id(lead_id: int, db: Session):
+    """Retrieve a lead by its ID."""
     db_lead = db.query(LeadModel).filter(LeadModel.id == lead_id).first()
     if not db_lead:
         raise HTTPException(status_code=404, detail="Lead not found")
     return db_lead
 
 def create_new_lead(lead, db:Session):
+    """Create a new Lead"""
     existing_lead = db.query(LeadModel).filter(LeadModel.name == lead.name).first()
     if existing_lead:
         raise HTTPException(status_code=400, detail="Lead with this name already exists")
@@ -29,6 +33,7 @@ def create_new_lead(lead, db:Session):
     return db_lead
 
 def update_lead_by_id(lead_id: int, lead, db: Session):
+    """Update a lead by its ID."""
     db_lead = get_lead_by_id(lead_id, db)
     db_lead.name = lead.name
     db_lead.status = lead.status
@@ -43,7 +48,12 @@ def update_lead_by_id(lead_id: int, lead, db: Session):
     return db_lead
 
 def delete_lead_by_id(lead_id: int, db: Session):
-    db_lead = get_lead_by_id(lead_id, db)
-    db.delete(db_lead)
-    db.commit()
-    return {"message": "Lead deleted successfully"}
+    """Delete a Lead by its ID"""
+    try:
+        db_lead = get_lead_by_id(lead_id, db)
+        print(db_lead)
+        db.delete(db_lead)
+        db.commit()
+        return {"message": "Lead deleted successfully"}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Database error: {e}") from e

@@ -45,19 +45,22 @@ class Interaction(BaseModel):
     class Config:
         "Pydantic Configuration"
         json_encoders = {
-            ObjectId: str,  # Convert ObjectId to string for serialization
+            ObjectId: str,
         }
 
 class AddUpdateInteraction(Interaction):
+    """Add/Update Interaction Model"""
     interaction_date: datetime
 
 class InteractionResponse(Interaction):
+    """Interaction Response Model"""
     id: str
     lead_name: str
     interaction_date: str
     
 
 class Performance(BaseModel):
+    """Performance Model"""
     id: int
     order_count: int
     total_order_value: float

@@ -7,6 +7,7 @@ from pymongo.errors import PyMongoError
 
 load_dotenv(dotenv_path="app/.env")
 
+# Load environment variables
 CONNECTION_STRING = os.getenv('CONNECTION_STRING')
 CONNECTION_STRING_ATLAS = os.getenv('CONNECTION_STRING_ATLAS')
 

@@ -1,8 +1,10 @@
+"""This module contains functions for retrieving performance data from MongoDB."""
+
 import os
 from dotenv import load_dotenv
+from sqlalchemy.orm import Session
 from ..utils.utils import convert_to_date_and_time
 from ..configs.database.mongo_db import mongo_db
-from sqlalchemy.orm import Session
 from ..models.postgres_models import LeadModel
 
 load_dotenv(dotenv_path="app/.env")
@@ -12,6 +14,7 @@ mongo_db.set_collection(INTERACTION_COLLECTION)
 collection = mongo_db.get_collection()
 
 async def get_performance_data(pipeline, db: Session, limit):
+    """Retrieve performance data using a MongoDB aggregation pipeline."""
     performance_data = await collection.aggregate(pipeline).to_list(length=limit)
     lead_ids = [performance['_id'] for performance in performance_data]
     leads = db.query(LeadModel).filter(LeadModel.id.in_(lead_ids)).all()
@@ -29,4 +32,3 @@ async def get_performance_data(pipeline, db: Session, limit):
             "lead_name": lead_dict.get(performance["_id"], "Unknown"),
         })
     return response_data
-

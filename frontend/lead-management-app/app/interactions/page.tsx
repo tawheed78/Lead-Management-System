@@ -448,8 +448,8 @@ export default function Interactions() {
                 <Input id="editInteractionDate" name="interaction_date" type="date" value={editingInteraction.interaction_date} onChange={(e) => setEditingInteraction({ ...editingInteraction, interaction_date: e.target.value })} className="col-span-3" />
               </div>
               <div className="grid grid-cols-4 items-center gap-4">
-                <Label className="text-right">Time: </Label>
-                <div className="col-span-3">{editingInteraction.interaction_time}</div>
+                <Label htmlFor="editInteractionDate" className="text-right">Time: </Label>
+                <Input id="editInteractionTime" name="interaction_time" type="time" value={editingInteraction.interaction_time} onChange={(e) => setEditingInteraction({ ...editingInteraction, interaction_time: e.target.value })} className="col-span-3" />
               </div>
               <div className="grid grid-cols-4 items-center gap-4">
                 <Label htmlFor="editInteractionNotes" className="text-right">Notes</Label>

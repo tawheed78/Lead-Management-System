@@ -9,6 +9,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Label } from '@/components/ui/label'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import {config} from '@/app/config'
+import { error } from 'console'
 
 
 interface Lead {
@@ -99,6 +100,7 @@ export default function Leads() {
 
   const handleAddLead = async () => {
     try {
+      const [errorMessage, setErrorMessage] = useState('');
       const response = await fetch(`${config.BASE_URL}/lead`, {
         method: 'POST',
         headers: {
@@ -114,7 +116,7 @@ export default function Leads() {
         setLeads([...leads, addedLead])
         setIsAddLeadModalOpen(false)
       } else {
-        console.error('Failed to add lead')
+        console.error('Failed to add lead', error);
       }
     } catch (error) {
       console.error('Error adding lead:', error)
@@ -163,7 +165,6 @@ export default function Leads() {
           Authorization: `Bearer ${token}`,
         },
       })
-  
       if (response.ok) {
         const updatedLeads = leads.filter(lead => lead.id !== id)
         setLeads(updatedLeads)
@@ -183,7 +184,6 @@ export default function Leads() {
   const handleAddPoc = async () => {
     if (currentLeadId) {
       try {
-        console.log('currentLeadId:', currentLeadId)
         const response = await fetch(`${config.BASE_URL}/lead/${currentLeadId}/poc`, {
           method: 'POST',
           headers: {

@@ -34,7 +34,6 @@ export default function CallPlanning() {
         setLeads(leadsData)
         const callsData = await fetchCalls(token)
         setCalls(callsData)
-        console.log(callsData)
       }
       fetchData()
     }
@@ -107,10 +106,9 @@ export default function CallPlanning() {
     if (token && selectedCall) {
       try {
         const updatedCall = await updateCallFrequency(selectedCall.lead_id, selectedCall.id, updateFrequency, token)
-        const [next_call_date, next_call_time] = updatedCall.next_call_date.split('T');
         setCalls((prevCalls) =>
           prevCalls.map((call) =>
-            call.id === selectedCall.id ? { ...call, frequency: updatedCall.frequency, next_call_date, next_call_time } : call
+            call.id === selectedCall.id ? { ...call, frequency: updatedCall.frequency, next_call_date: updatedCall.next_call_date, next_call_time: updatedCall.next_call_time } : call
           )
         );
         setIsUpdateModalOpen(false);

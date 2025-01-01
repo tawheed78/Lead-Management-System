@@ -3,7 +3,6 @@
 import { useState, useEffect } from 'react'
 import { useAuth } from '@/hooks/useAuth'
 import { Card } from '@/components/ui/card'
-// import { Button } from '@/components/ui/button'
 
 import {
   Dialog,
@@ -17,7 +16,6 @@ import { TodaysCalls, fetchDashboardData } from '@/services/dashboardService'
 
 
 export default function Dashboard() {
-  // const { user, loading, error } = useAuth('admin')
   const { loading } = useAuth('admin')
   const [isCallsModalOpen, setIsCallsModalOpen] = useState(false)
   const [totalLeads, setTotalLeads] = useState(0)
@@ -30,6 +28,7 @@ export default function Dashboard() {
     async function loadData() {
       try {
         if (token) {
+          
           const data = await fetchDashboardData(token)
           setTotalLeads(data.totalLeads)
           setActiveLeads(data.activeLeads)
@@ -39,15 +38,15 @@ export default function Dashboard() {
         console.error('Error loading dashboard data:', error)
       }
     }
-
     loadData()
   }, [token])
 
 
   if (loading) {
     return <div>Loading...</div>
+    
   }
-
+  
   return (
     <div className="space-y-6">
       <h2 className="text-2xl font-bold text-gray-800">Dashboard</h2>
@@ -97,12 +96,6 @@ export default function Dashboard() {
             </Table>
           </DialogContent>
         </Dialog>
-        {/* <Card>
-          <div className="p-4">
-            <h3 className="font-semibold text-lg mb-2">Orders This Week</h3>
-            <p className="text-3xl font-bold">42</p>
-          </div>
-        </Card> */}
       </div>
     </div>
   )

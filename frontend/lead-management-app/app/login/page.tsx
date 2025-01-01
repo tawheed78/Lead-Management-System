@@ -35,7 +35,6 @@ export default function Login() {
         localStorage.setItem('token', data.access_token)
         document.cookie = `token=${data.access_token}; path=/`
         router.push('/')
-        console.log('Redirected');
       } else {
         const errorData = await response.json()
         throw new Error(errorData.message)

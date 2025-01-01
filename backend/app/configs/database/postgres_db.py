@@ -25,7 +25,7 @@ def create_database_if_not_exists():
     "Function to create the database if it does not exist"
     try:
         with engine_without_db.connect() as conn:
-            conn.execute(text("COMMIT"))  # Ensure we're not in a transaction
+            conn.execute(text("COMMIT"))
             result = conn.execute(
                 text(f"SELECT 1 FROM pg_database WHERE datname = '{DB_NAME}'")
             ).fetchone()

@@ -36,6 +36,7 @@ async def add_interaction(
         if not db_lead:
             raise HTTPException(status_code=404, detail="Lead not found")
         interaction["lead_id"] = lead_id
+        interaction
         interaction["interaction_date"] = interaction["interaction_date"].strftime("%Y-%m-%d")
         interaction["interaction_time"] = interaction["interaction_time"].strftime('%H:%M:%S')
         if interaction.get("order"):
@@ -51,6 +52,8 @@ async def add_interaction(
             db.commit()
             db.refresh(db_lead)
         await collection.insert_one(interaction)
+        interaction['id'] = str(interaction["_id"])
+        interaction["lead_name"] = db_lead.name
         return interaction
     except SQLAlchemyError as e:
         db.rollback()

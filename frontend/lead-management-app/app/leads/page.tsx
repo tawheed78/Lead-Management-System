@@ -9,7 +9,6 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Label } from '@/components/ui/label'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import {config} from '@/app/config'
-import { error } from 'console'
 
 
 interface Lead {
@@ -116,7 +115,7 @@ export default function Leads() {
         setLeads([...leads, addedLead])
         setIsAddLeadModalOpen(false)
       } else {
-        console.error('Failed to add lead', error);
+        console.error('Failed to add lead')
       }
     } catch (error) {
       console.error('Error adding lead:', error)

@@ -47,28 +47,52 @@ export default function Leads() {
 
   const token = localStorage.getItem('token')
 
-  useEffect(() => {
-    fetchLeads()
-  }, [])
+  // useEffect(() => {
+  //   fetchLeads()
+  // }, [fetchLeads])
 
-  const fetchLeads = async () => {
-    try {
-      const leadsResponse = await fetch(`${config.BASE_URL}/lead`, {
-        headers: {
-        Authorization: `Bearer ${token}`,
-        },
-    })
-      if (leadsResponse.ok) {
-        const leadsData = await leadsResponse.json()
-        setLeads(leadsData) 
-      } else {
+  // const fetchLeads = async () => {
+  //   try {
+  //     const leadsResponse = await fetch(`${config.BASE_URL}/lead`, {
+  //       headers: {
+  //       Authorization: `Bearer ${token}`,
+  //       },
+  //   })
+  //     if (leadsResponse.ok) {
+  //       const leadsData = await leadsResponse.json()
+  //       setLeads(leadsData) 
+  //     } else {
+  //         throw new Error('Failed to fetch dashboard data')
+  //       }
+  //   }catch (error) {
+  //     console.error('Error fetching dashboard data:', error)
+  //     throw error
+  //   }
+  // }
+
+  useEffect(() => {
+    const fetchLeads = async () => {
+      try {
+        const leadsResponse = await fetch(`${config.BASE_URL}/lead`, {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        })
+        if (leadsResponse.ok) {
+          const leadsData = await leadsResponse.json()
+          setLeads(leadsData)
+        } else {
           throw new Error('Failed to fetch dashboard data')
         }
-    }catch (error) {
-      console.error('Error fetching dashboard data:', error)
-      throw error
+      } catch (error) {
+        console.error('Error fetching dashboard data:', error)
+        throw error
+      }
     }
-  }
+  
+    fetchLeads()
+  }, [token])
+  
 
   const fetchPointsOfContact = async (leadId: string) => {
     try {
@@ -99,7 +123,6 @@ export default function Leads() {
 
   const handleAddLead = async () => {
     try {
-      const [errorMessage, setErrorMessage] = useState('');
       const response = await fetch(`${config.BASE_URL}/lead`, {
         method: 'POST',
         headers: {

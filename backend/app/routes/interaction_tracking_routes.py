@@ -54,7 +54,6 @@ async def add_interaction(
         await collection.insert_one(interaction)
         interaction['id'] = str(interaction["_id"])
         interaction["lead_name"] = db_lead.name
-        print(interaction)
         return interaction
     except SQLAlchemyError as e:
         db.rollback()

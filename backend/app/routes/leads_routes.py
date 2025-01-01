@@ -22,7 +22,7 @@ router = APIRouter()
 async def create_lead(
     lead: LeadCreateUpdate,
     db: Session = Depends(get_postgres_db),
-    permissions: bool = has_permission(["admin"])
+    permissions: bool = has_permission(["sales","admin"])
     ):
     """Route to create a new lead."""
     try:

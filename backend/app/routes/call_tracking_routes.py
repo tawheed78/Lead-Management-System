@@ -116,7 +116,7 @@ async def calls_today(
 async def delete_call(
     call_id: int,
     db: Session = Depends(get_postgres_db),
-    permissions: bool = has_permission(["sales", 'viewer', 'admin'])
+    permissions: bool = has_permission(['admin'])
     ):
     """Route to delete a call by ID."""
     try:

@@ -29,7 +29,7 @@ async def add_poc(
 @router.get('/poc/all', response_model=List[POC])
 async def get_all(
     db: Session = Depends(get_postgres_db),
-    permissions: bool = has_permission(["sales", 'admin'])
+    permissions: bool = has_permission(["sales", 'admin', 'viewer'])
     ):
     """Route to retrieve all points of contact."""
     return get_all_pocs(db)
@@ -39,7 +39,7 @@ async def get_all(
 async def get_pocs(
     lead_id: int,
     db: Session = Depends(get_postgres_db),
-    permissions: bool = has_permission(["sales", 'admin'])
+    permissions: bool = has_permission(["sales", 'admin', 'viewer'])
     ):
     """Route to retrieve all points of contact for a specific lead."""
     try:
@@ -54,7 +54,7 @@ async def update_poc(
     poc_id: int,
     poc: POC,
     db: Session = Depends(get_postgres_db),
-    permissions: bool = has_permission(["admin"])
+    permissions: bool = has_permission(["admin", "sales"])
     ):
     """Route to update a point of contact by ID."""
     try:

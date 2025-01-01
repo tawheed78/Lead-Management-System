@@ -1,7 +1,7 @@
 const config = {
     // BASE_URL: 'https://backend-ukh2.onrender.com/api',
     // BASE_URL: 'http://127.0.0.1:8000/api',
-    BASE_URL: 'https://lead-management-backend-latest.onrender.com/api',
+    BASE_URL: 'https://lead-management-app-backend.onrender.com/api',
   };
   
 

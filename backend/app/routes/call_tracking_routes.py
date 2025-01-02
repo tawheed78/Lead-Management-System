@@ -17,7 +17,7 @@ from ..services.call_tracking_service import (
 
 router = APIRouter()
 
-@router.post('/lead/{lead_id}/call', response_model=CallCreate)
+@router.post('/lead/{lead_id}/call', response_model=CallResponse)
 async def add_call(
     lead_id: int,
     call: CallCreate,

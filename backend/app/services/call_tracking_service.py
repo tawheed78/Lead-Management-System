@@ -40,7 +40,14 @@ def add_call_to_lead(lead_id: int, call: CallCreate, db: Session):
         db.add(db_call)
         db.commit()
         db.refresh(db_call)
-        return db_call
+        response = {
+            **{key: value for key, value in db_call.__dict__.items() if not key.startswith("_")},
+            "lead_name": db_lead.name,  # Include lead_name
+            "poc_name": db_poc.name,    # Include poc_name
+            "poc_contact": db_poc.phone_number  # Include poc_contact
+        }
+        print(response)
+        return response
     except SQLAlchemyError as e:
         db.rollback()
         raise HTTPException(status_code=500, detail=f"Database error: {e}") from e

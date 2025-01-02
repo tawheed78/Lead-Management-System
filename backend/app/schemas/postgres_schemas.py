@@ -83,7 +83,9 @@ class CallUpdate(BaseModel):
     frequency: int
 
 class CallResponse(CallCreate):
-    pass
+    poc_name: str
+    lead_name: str
+    poc_contact: int
 
 class CallTodayResponse(CallCreate):
     """Response model for today's calls."""

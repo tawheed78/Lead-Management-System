@@ -47,29 +47,6 @@ export default function Leads() {
 
   const token = localStorage.getItem('token')
 
-  // useEffect(() => {
-  //   fetchLeads()
-  // }, [fetchLeads])
-
-  // const fetchLeads = async () => {
-  //   try {
-  //     const leadsResponse = await fetch(`${config.BASE_URL}/lead`, {
-  //       headers: {
-  //       Authorization: `Bearer ${token}`,
-  //       },
-  //   })
-  //     if (leadsResponse.ok) {
-  //       const leadsData = await leadsResponse.json()
-  //       setLeads(leadsData) 
-  //     } else {
-  //         throw new Error('Failed to fetch dashboard data')
-  //       }
-  //   }catch (error) {
-  //     console.error('Error fetching dashboard data:', error)
-  //     throw error
-  //   }
-  // }
-
   useEffect(() => {
     const fetchLeads = async () => {
       try {
@@ -287,7 +264,7 @@ export default function Leads() {
               </div>
               <div className="grid grid-cols-4 items-center gap-4">
                 <Label htmlFor="area_of_interest" className="text-right">Industry</Label>
-                <Input id="area_of_interest" name="area_of_interest" value={newLead.area_of_interest} onChange={handleInputChange} className="col-span-3" />
+                <Input id="area_of_interest" placeholder='Restaurant' name="area_of_interest" value={newLead.area_of_interest} onChange={handleInputChange} className="col-span-3" />
               </div>
               <div className="grid grid-cols-4 items-center gap-4">
                 <Label htmlFor="address" className="text-right">Address</Label>
@@ -303,11 +280,11 @@ export default function Leads() {
               </div>
               <div className="grid grid-cols-4 items-center gap-4">
                 <Label htmlFor="country" className="text-right">Country</Label>
-                <Input id="country" name="country" value={newLead.country} onChange={handleInputChange} className="col-span-3" />
+                <Input id="country" placeholder='India' name="country" value={newLead.country} onChange={handleInputChange} className="col-span-3" />
               </div>
               <div className="grid grid-cols-4 items-center gap-4">
                 <Label htmlFor="timezone" className="text-right">Timezone</Label>
-                <Input id="timezone" name="timezone" value={newLead.timezone} onChange={handleInputChange} className="col-span-3" />
+                <Input id="timezone" placeholder='Asia/Kolkata' name="timezone" value={newLead.timezone} onChange={handleInputChange} className="col-span-3" />
               </div>
               <div className="grid grid-cols-4 items-center gap-4">
                 <Label htmlFor="created_at" className="text-right">Created At</Label>

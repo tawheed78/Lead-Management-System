@@ -53,11 +53,28 @@ export const prepareChartData = (data: PerformanceData[]) => {
   }))
 }
 
-export const prepareLineChartData = (data: PerformanceData[]) => {
-  return data
-    .sort((a, b) => new Date(a.last_interaction_date).getTime() - new Date(b.last_interaction_date).getTime()) // Sort by date
-    .map(item => ({
-      date: formatDate(item.last_interaction_date),
-      orders: item.order_count,
-    }));
+// export const prepareLineChartData = (data: PerformanceData[]) => {
+//   return data
+//     .sort((a, b) => new Date(a.last_interaction_date).getTime() - new Date(b.last_interaction_date).getTime()) // Sort by date
+//     .map(item => ({
+//       date: formatDate(item.last_interaction_date),
+//       orders: item.order_count,
+//     }));
+// }
+
+export const prepareLineChartData = (data: PerformanceData[]): LineChartData[] => {
+  const aggregatedData: { [key: string]: number } = {}
+
+  data.forEach(item => {
+    const date = item.last_interaction_date.split('T')[0] // Extract the date part
+    if (!aggregatedData[date]) {
+      aggregatedData[date] = 0
+    }
+    aggregatedData[date] += item.order_count
+  })
+
+  const sortedData = Object.keys(aggregatedData)
+  .map(date => ({ date, orders: aggregatedData[date] }))
+  .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime())
+  return sortedData
 }

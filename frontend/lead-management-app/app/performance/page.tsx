@@ -17,8 +17,6 @@ interface LineChartData {
 }
 
 export default function Performance() {
-  // const { user, loading } = useAuth('admin')
-  // const [restaurants, setRestaurants] = useState([])
   const { loading } = useAuth('admin')
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [restaurants, setRestaurants] = useState([])
@@ -48,7 +46,8 @@ export default function Performance() {
     if (token) {
       fetchData(`${config.BASE_URL}/performance`, token, (data) => {
         setPerformanceData(data)
-        setFilteredData(data)
+        const sortedData = data.sort((a, b) => b.total_order_value - a.total_order_value)
+        setFilteredData(sortedData)
         calculateTotals(data, setTotals)
         const lineChartData = prepareLineChartData(data)
         setLineChartData(lineChartData)
@@ -158,6 +157,7 @@ export default function Performance() {
           </ResponsiveContainer>
         </CardContent>
       </Card>
+      <p className="text-lg font-medium text-gray-700">Performance data of restaurants by Total Order Value</p>
       <div className="flex space-x-4 mb-4">
         <Input placeholder="Search restaurants..." className="max-w-sm" value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)} />
@@ -171,7 +171,7 @@ export default function Performance() {
             <TableHead>Average Order Value</TableHead>
             <TableHead>Total Order Value</TableHead>
             <TableHead>Last Order Date</TableHead>
-            <TableHead>Actions</TableHead>
+            {/* <TableHead>Actions</TableHead> */}
           </TableRow>
         </TableHeader>
         <TableBody>
@@ -182,9 +182,9 @@ export default function Performance() {
               <TableCell>{restaurant.avg_order_value.toFixed(2)} Rs</TableCell>
               <TableCell>{restaurant.total_order_value} Rs</TableCell>
               <TableCell>{restaurant.last_interaction_date}</TableCell>
-              <TableCell>
+              {/* <TableCell>
                 <Button variant="outline" size="sm">View Details</Button>
-              </TableCell>
+              </TableCell> */}
             </TableRow>
           ))}
         </TableBody>

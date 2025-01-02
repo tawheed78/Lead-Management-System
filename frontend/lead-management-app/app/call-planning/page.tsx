@@ -82,6 +82,7 @@ export default function CallPlanning() {
     if (token) {
       try {
         const addedCall = await addCall(newCall, token)
+        console.log(addedCall)
         setCalls((prevCalls) => [...prevCalls, addedCall]);
         setIsAddModalOpen(false);
       } catch (error) {

@@ -46,7 +46,7 @@ export default function Login() {
   }
 
   return (
-    <div className="flex items-center justify-center min-h-screen bg-gray-100">
+    <div className="flex flex-col items-center justify-center min-h-screen bg-gray-100">
       <Card className="w-[350px]">
         <CardHeader>
           <CardTitle>Login</CardTitle>
@@ -86,6 +86,9 @@ export default function Login() {
           </div>
         </CardContent>
       </Card>
+      <p className="mt-4 text-center text-xs text-gray-00 w-[300px]">
+      Note: Backend is hosted on a free tier and may take up to 30 seconds to respond after periods of inactivity.
+      </p>
     </div>
   )
 }

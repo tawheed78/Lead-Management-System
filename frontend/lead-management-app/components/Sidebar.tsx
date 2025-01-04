@@ -8,7 +8,7 @@ interface SidebarProps {
 }
 
 const navItems = [
-  { name: 'Dashboard', href: '/', icon: Home, roles: ['admin', 'sales', 'viewer'] },
+  { name: 'Dashboard', href: '/dashboard', icon: Home, roles: ['admin', 'sales', 'viewer'] },
   { name: 'Leads', href: '/leads', icon: Users, roles: ['admin', 'sales', 'viewer'] },
   { name: 'Interactions', href: '/interactions', icon: PhoneCall, roles: ['admin', 'sales', 'viewer'] },
   { name: 'Call Planning', href: '/call-planning', icon: Calendar, roles: ['admin', 'sales', 'viewer'] },

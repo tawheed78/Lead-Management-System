@@ -32,12 +32,11 @@ export default function Login() {
 
       if (response.ok) {
         const data = await response.json()
-        localStorage.setItem('token', data.access_token)
-        document.cookie = `token=${data.access_token}; path=/`
-        router.push('/')
-      } else {
-        const errorData = await response.json()
-        throw new Error(errorData.message)
+        await Promise.all([
+          localStorage.setItem('token', data.access_token),
+          document.cookie = `token=${data.access_token}; path=/`
+        ]);
+        router.push('/dashboard')
       }
     } catch (error) {
       console.error('Login error:', error)

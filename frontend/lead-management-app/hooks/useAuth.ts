@@ -1,64 +1,57 @@
 'use client'
-
 import { useEffect, useState } from 'react'
-import { usePathname, useRouter } from 'next/navigation'
+import { useRouter, usePathname } from 'next/navigation'
 import {config} from '@/app/config'
+import { User } from '@/components/AppShell'
 
-type Role = 'admin' | 'sales' | 'viewer'
+export function useAuth(requiredRole?: 'admin' | 'sales' | 'viewer') {
+ const [user, setUser] = useState<User | null>(null)
+ const [loading, setLoading] = useState(true)
+ const [error, setError] = useState<string | null>(null)
+ const router = useRouter()
+ const pathname = usePathname()
 
-interface User {
-  id: string
-  username: string
-  role: Role
-}
+ useEffect(() => {
+ const token = localStorage.getItem('token')
+ 
+ if (pathname === '/login' || pathname === '/register') {
+ setLoading(false)
+ return
+ }
 
-export function useAuth(requiredRole?: Role) {
-  const [user, setUser] = useState<User | null>(null)
-  const [loading, setLoading] = useState(true)
-  const [error, setError] = useState<string | null>(null)
-  const router = useRouter()
-  const pathname = usePathname();
+ if (!token) {
+ setLoading(false)
+ router.push('/login')
+ return
+ }
 
-  useEffect(() => {
-    if (pathname === '/login' || pathname === '/register') {
-      setLoading(false);
-      return;
-    }
+ async function checkAuth() {
+ try {
+ const response = await fetch(`${config.BASE_URL}/user/auth/me`, {
+ headers: { Authorization: `Bearer ${token}` }
+ })
 
-    async function checkAuth() {
-      try {
-        const token = localStorage.getItem('token');
-        if (!token) {
-          throw new Error('No token found');
-        }
-        // Fetch user details from backend like role, username.
-        const response = await fetch(`${config.BASE_URL}/user/auth/me`, {
-          method: 'GET',
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        });
+ if (!response.ok) {
+ throw new Error('Failed to fetch user data')
+ }
 
-        if (response.ok) {
-          const userData: User = await response.json()
-          setUser(userData)
-          if (requiredRole && userData.role !== requiredRole) {
-            router.push('/unauthorized')
-          }
-        } else {
-          throw new Error('Failed to fetch user data')
-        }
-      } catch (error) {
-        console.error('Auth error:', error)
-        setError('Authentication failed. Please try logging in again.')
-        router.push('/login')
-      } finally {
-        setLoading(false)
-      }
-    }
+ const userData: User = await response.json()
+ setUser(userData)
+ 
+ if (requiredRole && userData.role !== requiredRole) {
+ router.push('/unauthorized')
+ }
+ } catch (error) {
+ console.error('Auth error:', error)
+ setError('Authentication failed')
+ router.push('/login')
+ } finally {
+ setLoading(false)
+ }
+ }
 
-    checkAuth()
-  }, [requiredRole, router])
+ checkAuth()
+ }, [requiredRole, router, pathname])
 
-  return { user, loading, error }
+ return { user, loading, error }
 }

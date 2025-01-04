@@ -1,19 +1,13 @@
 'use client'
 
-import { useState, useEffect } from 'react'
-import { useAuth } from '@/hooks/useAuth'
 import { Card } from '@/components/ui/card'
-
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from "@/components/ui/dialog"
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
+import { DialogHeader } from '@/components/ui/dialog'
+import { TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
+import { useAuth } from '@/hooks/useAuth'
+import { Dialog, DialogContent, DialogTitle, DialogTrigger } from '@radix-ui/react-dialog'
+import { Table } from 'lucide-react'
+import React, { useEffect, useState } from 'react'
 import { TodaysCalls, fetchDashboardData } from '@/services/dashboardService'
-
 
 export default function Dashboard() {
   const { loading } = useAuth('admin')
@@ -21,14 +15,13 @@ export default function Dashboard() {
   const [totalLeads, setTotalLeads] = useState(0)
   const [activeLeads, setActiveLeads] = useState(0)
   const [todaysCalls, setTodaysCalls] = useState<TodaysCalls[]>([])
+  const [token, setToken] = useState<string | null>(null)
 
-  const token = localStorage.getItem('token')
-  
   useEffect(() => {
+    const token = localStorage.getItem('token')
     async function loadData() {
       try {
         if (token) {
-          
           const data = await fetchDashboardData(token)
           setTotalLeads(data.totalLeads)
           setActiveLeads(data.activeLeads)
@@ -41,12 +34,16 @@ export default function Dashboard() {
     loadData()
   }, [token])
 
+  useEffect(() => {
+    // Only run after component mounts to avoid hydration issues
+    setToken(localStorage.getItem('token'))
+  }, [])
 
-  if (loading) {
+  // Show loading state or redirect if no token
+  if (loading || !token) {
     return <div>Loading...</div>
-    
   }
-  
+
   return (
     <div className="space-y-6">
       <h2 className="text-2xl font-bold text-gray-800">Dashboard</h2>
@@ -100,4 +97,3 @@ export default function Dashboard() {
     </div>
   )
 }
-

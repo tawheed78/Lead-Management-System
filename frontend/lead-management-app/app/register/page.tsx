@@ -29,11 +29,12 @@ export default function Register() {
         body: JSON.stringify({ full_name, username, email, password, role }),
       })
       if (response.ok) {
-        // const data = await response.json()
-        await response.json()
-        router.push('/')
-      } else {
-        console.error('Registration failed:', response.statusText)
+        const data = await response.json()
+        await Promise.all([
+          localStorage.setItem('token', data.access_token),
+          document.cookie = `token=${data.access_token}; path=/`
+        ]);
+        router.push('/dashboard')
       }
     } catch (error) {
       console.error('Error registering:', error)

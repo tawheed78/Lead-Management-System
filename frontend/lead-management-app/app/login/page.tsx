@@ -14,10 +14,12 @@ export default function Login() {
   const [password, setPassword] = useState('')
   const [error, setError] = useState<string | null>(null)
   const router = useRouter()
+  const [isSubmitting, setIsSubmitting] = useState(false)
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setError(null)
+    setIsSubmitting(true)
     try {
       const response = await fetch(`${config.BASE_URL}/user/token`, {
         method: 'POST',
@@ -41,6 +43,8 @@ export default function Login() {
     } catch (error) {
       console.error('Login error:', error)
       setError(error instanceof Error ? error.message : 'An unexpected error occurred')
+    } finally {
+      setIsSubmitting(false)
     }
   }
 
@@ -73,8 +77,9 @@ export default function Login() {
               />
             </div>
             {error && <div className="text-red-500 text-sm">{error}</div>}
-            <Button type="submit" className="w-full">
-              Log in
+            <Button type="submit" className="w-full" disabled={isSubmitting}>
+              {/* Log in */}
+              {isSubmitting ? 'Logging in...' : 'Log in'}
             </Button>
           </form>
           <div className="mt-4 text-center text-sm">

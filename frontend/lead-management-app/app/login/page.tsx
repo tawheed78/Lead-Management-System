@@ -78,7 +78,6 @@ export default function Login() {
             </div>
             {error && <div className="text-red-500 text-sm">{error}</div>}
             <Button type="submit" className="w-full" disabled={isSubmitting}>
-              {/* Log in */}
               {isSubmitting ? 'Logging in...' : 'Log in'}
             </Button>
           </form>

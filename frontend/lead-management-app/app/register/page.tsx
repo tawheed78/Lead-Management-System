@@ -16,10 +16,12 @@ export default function Register() {
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [role, setRole] = useState('')
+  const [isSubmitting, setIsSubmitting] = useState(false)
   const router = useRouter()
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
+    setIsSubmitting(true)
     try {
       const response = await fetch(`${config.BASE_URL}/user/register`, {
         method: 'POST',
@@ -38,6 +40,8 @@ export default function Register() {
       }
     } catch (error) {
       console.error('Error registering:', error)
+    } finally {
+      setIsSubmitting(false)
     }
   }
 
@@ -101,7 +105,7 @@ export default function Register() {
               </Select>
             </div>
             <Button type="submit" className="w-full">
-              Register
+              {isSubmitting ? 'Registering new User...' : 'Register'}
             </Button>
           </form>
           <div className="mt-4 text-center text-sm">

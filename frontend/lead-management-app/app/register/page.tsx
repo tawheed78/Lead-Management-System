@@ -104,7 +104,7 @@ export default function Register() {
                 </SelectContent>
               </Select>
             </div>
-            <Button type="submit" className="w-full">
+            <Button type="submit" className="w-full" disabled={isSubmitting}>
               {isSubmitting ? 'Registering new User...' : 'Register'}
             </Button>
           </form>

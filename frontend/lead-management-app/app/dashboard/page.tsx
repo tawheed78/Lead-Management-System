@@ -2,10 +2,8 @@
 
 import { Card } from '@/components/ui/card'
 import { DialogHeader } from '@/components/ui/dialog'
-import { TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
 import { useAuth } from '@/hooks/useAuth'
-import { Dialog, DialogContent, DialogTitle, DialogTrigger } from '@radix-ui/react-dialog'
-import { Table } from 'lucide-react'
+import { Dialog, DialogContent, DialogTitle, DialogTrigger, DialogOverlay } from '@radix-ui/react-dialog'
 import React, { useEffect, useState } from 'react'
 import { TodaysCalls, fetchDashboardData } from '@/services/dashboardService'
 
@@ -69,28 +67,43 @@ export default function Dashboard() {
               </div>
             </Card>
           </DialogTrigger>
-          <DialogContent className="sm:max-w-[425px]">
-            <DialogHeader>
-              <DialogTitle>Today&apos;s Calls</DialogTitle>
-            </DialogHeader>
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Restaurant</TableHead>
-                  <TableHead>Contact</TableHead>
-                  <TableHead>Time</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {todaysCalls.map((call) => (
-                  <TableRow key={call.id}>
-                    <TableCell>{call.lead_name}</TableCell>
-                    <TableCell>{call.poc_contact}</TableCell>
-                    <TableCell>{call.next_call_time}</TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
+          <DialogOverlay className="fixed inset-0 bg-black bg-opacity-50" />
+          <DialogContent className="fixed inset-0 flex items-center justify-center p-4">
+            <div className="bg-white rounded-lg shadow-lg max-w-md w-full p-6">
+              <DialogHeader>
+                <DialogTitle>Today&apos;s Calls</DialogTitle>
+              </DialogHeader>
+              <table className="w-full border-collapse mt-4">
+                <thead>
+                  <tr>
+                    <th className="px-4 py-2 text-left">Restaurant</th>
+                    <th className="px-4 py-2 text-left">Contact</th>
+                    <th className="px-4 py-2 text-left">Time</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {todaysCalls.length > 0 ? (
+                    todaysCalls.map((call) => (
+                      <tr key={call.id}>
+                        <td className="border px-4 py-2">{call.lead_name}</td>
+                        <td className="border px-4 py-2">{call.poc_contact}</td>
+                        <td className="border px-4 py-2">{call.next_call_time}</td>
+                      </tr>
+                    ))
+                  ) : (
+                    <tr>
+                      <td colSpan={3} className="text-center py-4">No calls for today</td>
+                    </tr>
+                  )}
+                </tbody>
+              </table>
+              <button
+                onClick={() => setIsCallsModalOpen(false)}
+                className="mt-4 bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600"
+              >
+                Close
+              </button>
+            </div>
           </DialogContent>
         </Dialog>
       </div>

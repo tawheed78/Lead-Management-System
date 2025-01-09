@@ -4,7 +4,6 @@ import { useState, useEffect } from 'react'
 import { useAuth } from '@/hooks/useAuth'
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
-// import { Card } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Label } from '@/components/ui/label'
 import { Input } from '@/components/ui/input'
@@ -14,7 +13,6 @@ import { Lead, Call, fetchLeads, fetchCalls, fetchPointOfContacts, updateCallLog
 
 
 export default function CallPlanning() {
-  // const { user, loading } = useAuth('admin')
   const { loading } = useAuth('admin')
   const [calls, setCalls] = useState<Call[]>([])
   const [leads, setLeads] = useState<Lead[]>([])
@@ -38,6 +36,7 @@ export default function CallPlanning() {
       fetchData()
     }
   }, [token])
+
 
   useEffect(() => {
     if (token && newCall.lead_id) {
@@ -82,7 +81,6 @@ export default function CallPlanning() {
     if (token) {
       try {
         const addedCall = await addCall(newCall, token)
-        console.log(addedCall)
         setCalls((prevCalls) => [...prevCalls, addedCall]);
         setIsAddModalOpen(false);
       } catch (error) {
@@ -137,7 +135,7 @@ export default function CallPlanning() {
   if (loading) {
     return <div>Loading...</div>
   }
-
+  
   return (
     <div className="space-y-6">
       <div className="flex justify-between items-center">

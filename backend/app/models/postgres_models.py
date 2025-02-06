@@ -84,7 +84,18 @@ class PointOfContactModel(Base):
     phone_number = Column(String, nullable=False)
 
     lead = relationship("LeadModel", back_populates="contacts")
-    calls = relationship("CallModel", back_populates="poc")
+    calls = relationship("CallModel", back_populates="poc", cascade="all, delete-orphan")
+
+    def to_dict(self):
+        return {
+            "id": self.id,
+            "lead_id": self.lead_id,
+            "name": self.name,
+            "role": self.role,
+            "email": self.email,
+            "phone_number": self.phone_number
+        }
+
 
 
 class CallModel(Base):

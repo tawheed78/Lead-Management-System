@@ -32,7 +32,9 @@ def add_poc_to_lead(lead_id: int, poc: POC, db: Session):
 def get_all_pocs(db: Session):
     """Retrieve all points of contact."""
     try:
-        return db.query(PointOfContactModel).all()
+        poc_data = db.query(PointOfContactModel).all()
+        poc_data_dict = [poc.to_dict() for poc in poc_data]
+        return poc_data_dict
     except SQLAlchemyError as e:
         raise HTTPException(status_code=500, detail=f"Database error: {e}") from e
 
@@ -43,7 +45,9 @@ def get_pocs_by_lead_id(lead_id: int, db: Session):
     if not db_lead:
         raise HTTPException(status_code=404, detail="Lead not found")
     try:
-        return db.query(PointOfContactModel).filter(PointOfContactModel.lead_id == lead_id).all()
+        pocs_by_lead = db.query(PointOfContactModel).filter(PointOfContactModel.lead_id == lead_id).all()
+        pocs_by_lead_dict = [poc.to_dict() for poc in pocs_by_lead]
+        return pocs_by_lead_dict
     except SQLAlchemyError as e:
         raise HTTPException(status_code=500, detail=f"Database error: {e}") from e
 

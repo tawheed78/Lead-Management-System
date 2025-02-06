@@ -62,7 +62,7 @@ class POC(BaseModel):
     phone_number: int
     class config:
         from_attributes = True
-
+    
 class POCList(POC):
     """Model for listing POCs with IDs."""
     id: int

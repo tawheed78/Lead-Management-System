@@ -4,7 +4,7 @@ from typing import List
 from fastapi import Depends, HTTPException
 from fastapi.security import OAuth2PasswordBearer
 from jose import JWTError, jwt # type: ignore
-from datetime import datetime, timedelta
+from datetime import date, datetime, time, timedelta
 from passlib.context import CryptContext # type: ignore
 import os
 import pytz # type: ignore
@@ -83,3 +83,8 @@ def convert_to_date_and_time(datetime_iso):
     date_time_obj = datetime.fromisoformat(iso_string)
     formatted_date = date_time_obj.strftime("%Y-%m-%d %I:%M %p").lower()
     return formatted_date
+
+def json_serializer(obj):
+    if isinstance(obj, (date, time)):
+        return obj.isoformat()
+    raise TypeError(f"Type {type(obj)} not serializable")

@@ -1,5 +1,5 @@
 """This module contains routes for leads."""
-from datetime import date
+
 import json
 import redis.asyncio as aioredis # type: ignore
 from typing import List
@@ -10,7 +10,7 @@ from ..models.postgres_models import LeadModel
 from ..configs.redis.redis import get_redis_client
 from ..configs.database.postgres_db import get_postgres_db
 from ..schemas.postgres_schemas import Lead, LeadResponse, LeadCreateUpdate
-from ..utils.utils import has_permission
+from ..utils.utils import has_permission, json_serializer
 from ..services.lead_service import (
     create_new_lead, 
     get_lead_by_id, 
@@ -19,11 +19,6 @@ from ..services.lead_service import (
 )
 
 router = APIRouter()
-
-def json_serializer(obj):
-    if isinstance(obj, date):
-        return obj.isoformat()
-    raise TypeError(f"Type {type(obj)} not serializable")
 
 @router.post('/', response_model=LeadResponse)
 async def create_lead(

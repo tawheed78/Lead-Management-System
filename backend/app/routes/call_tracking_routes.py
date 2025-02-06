@@ -45,7 +45,7 @@ async def update_call_frequency(
     """Route to update the frequency of a call."""
     try:
         cached_keys = ["calls-all", "calls-today"]
-        (await redis.delete(key) for key in cached_keys)
+        [await redis.delete(key) for key in cached_keys]
         return update_frequency(call_id, lead_id, call, db)
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Unexpected error: {e}") from e
@@ -62,7 +62,7 @@ async def update_call_log(
     """Route to update the call log."""
     try:
         cached_keys = ["calls-all", "calls-today"]
-        (await redis.delete(key) for key in cached_keys)
+        [await redis.delete(key) for key in cached_keys]
         return update_log(call_id, lead_id, db)
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Unexpected error: {e}") from e

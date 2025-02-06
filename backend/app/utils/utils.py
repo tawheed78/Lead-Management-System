@@ -1,6 +1,7 @@
 """Utility functions for the FastAPI application."""
 
 from typing import List
+from bson import ObjectId
 from fastapi import Depends, HTTPException
 from fastapi.security import OAuth2PasswordBearer
 from jose import JWTError, jwt # type: ignore
@@ -87,4 +88,6 @@ def convert_to_date_and_time(datetime_iso):
 def json_serializer(obj):
     if isinstance(obj, (date, time)):
         return obj.isoformat()
+    elif isinstance(obj, ObjectId):
+        return str(obj)
     raise TypeError(f"Type {type(obj)} not serializable")

@@ -27,7 +27,7 @@ async def add_poc(
     ):
     """ROute to add a point of contact to a lead."""
     cached_keys = ["pocs-all", f"pocs-{lead_id}"]
-    (await redis.delete(key) for key in cached_keys)
+    [await redis.delete(key) for key in cached_keys]
     return add_poc_to_lead(lead_id, poc, db)
 
 
@@ -79,7 +79,7 @@ async def update_poc(
     """Route to update a point of contact by ID."""
     try:
         cached_keys = ["pocs-all", f"pocs-{lead_id}"]
-        (await redis.delete(key) for key in cached_keys)
+        [await redis.delete(key) for key in cached_keys]
         return update_poc(lead_id, poc_id, poc, db)
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Unexpected error: {e}") from e
@@ -96,7 +96,7 @@ async def delete_poc(
     """Route to delete a point of contact by ID."""
     try:
         cached_keys = ["pocs-all", f"pocs-{lead_id}"]
-        (await redis.delete(key) for key in cached_keys)
+        [await redis.delete(key) for key in cached_keys]
         return delete_poc_by_lead_id(lead_id, poc_id, db)
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Database error: {e}") from e

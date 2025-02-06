@@ -1,16 +1,19 @@
 """This module contains routes for interaction tracking."""
 
+import json
 import os
+import redis.asyncio as aioredis # type: ignore
 from dotenv import load_dotenv
 from typing import List
 from bson import ObjectId
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 from sqlalchemy.exc import SQLAlchemyError
-from ..utils.utils import has_permission
+from ..utils.utils import has_permission, json_serializer
 from ..models.postgres_models import LeadModel
 from ..models.mongo_models import InteractionResponse, NewInteraction
 from ..configs.database.mongo_db import mongo_db
+from ..configs.redis.redis import get_redis_client
 from ..configs.database.postgres_db import get_postgres_db
 
 load_dotenv(dotenv_path="app/.env")
@@ -66,11 +69,17 @@ async def add_interaction(
 async def get_interactions(
     lead_id: int, 
     db: Session = Depends(get_postgres_db), 
+    redis: aioredis.Redis = Depends(get_redis_client),
     permissions: bool = has_permission(["sales", "viewer", "admin"])
     ):
     """Route to retrieve all interactions for a specific lead."""
     try:
+        cached_key = f"interactions-{lead_id}"
+        interactions_data_cache = await redis.get(cached_key)
+        if interactions_data_cache:
+            return json.loads(interactions_data_cache)
         interactions = await collection.find({"lead_id": lead_id}).sort([('interaction_date',-1),('interaction_time',-1)]).to_list(length=1000)
+        await redis.set(cached_key, json.dumps(interactions, default=json_serializer), ex=3600)
         return interactions
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"An error occurred: {e}") from e
@@ -79,10 +88,15 @@ async def get_interactions(
 @router.get('/interactions', response_model=List[InteractionResponse])
 async def get_all_interactions(
     db: Session = Depends(get_postgres_db), 
+    redis: aioredis.Redis = Depends(get_redis_client),
     permissions: bool = has_permission(["sales", "viewer", "admin"])
     ):
     """Route to retrieve all interactions."""
     try:
+        cached_key = "interactions-all"
+        interactions_data_cache = await redis.get(cached_key)
+        if interactions_data_cache:
+            return json.loads(interactions_data_cache)
         interactions = await collection.find({}).sort([('interaction_date',-1),('interaction_time',-1)]).to_list(length=1000)
         lead_ids = [interaction['lead_id'] for interaction in interactions]
         leads = db.query(LeadModel).filter(LeadModel.id.in_(lead_ids)).all()
@@ -92,6 +106,7 @@ async def get_all_interactions(
             interaction['id'] = str(interaction["_id"])
             interaction["lead_name"] = lead_dict.get(interaction["lead_id"], "Unknown")
             result.append(interaction)
+        await redis.set(cached_key, json.dumps(result, default=json_serializer), ex=3600)
         return result
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"An error occurred: {e}") from e
@@ -103,6 +118,7 @@ async def update_interaction(
     interaction_id: str, 
     interaction: NewInteraction,
     db: Session = Depends(get_postgres_db),
+    redis: aioredis.Redis = Depends(get_redis_client),
     permissions: bool = has_permission(["sales", "admin"])
     ):
     """Route to update an interaction by ID."""
@@ -120,6 +136,8 @@ async def update_interaction(
             else:
                 updated_interaction["lead_name"] = "Unknown Lead"
             updated_interaction["id"] = str(updated_interaction["_id"])
+            cached_keys = ["interactions-all", f"interactions-{lead_id}"]
+            [await redis.delete(key) for key in cached_keys]
             return updated_interaction
         raise HTTPException(status_code=404, detail="Interaction not found")
     except Exception as e:
@@ -127,11 +145,17 @@ async def update_interaction(
 
 
 @router.delete('/interactions/{interaction_id}', response_model=dict)
-async def delete_interaction(interaction_id: str, permissions: bool = has_permission(["admin"])):
+async def delete_interaction(
+    interaction_id: str,
+    redis: aioredis.Redis = Depends(get_redis_client),
+    permissions: bool = has_permission(["admin"])
+    ):
     """Route to delete an interaction by ID."""
     try:
         result = await collection.delete_one({"_id": ObjectId(interaction_id)})
         if result.deleted_count == 1:
+            cached_key = "interactions-all"
+            await redis.delete(cached_key)
             return {"status": "success", "message": "Interaction deleted"}
         raise HTTPException(status_code=404, detail="Interaction not found")
     except Exception as e:

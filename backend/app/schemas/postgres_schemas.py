@@ -48,7 +48,10 @@ class LeadCreateUpdate(Lead):
 class LeadResponse(LeadCreateUpdate):
     """Model for listing leads with ID and creation date."""
     id: int
-    created_at: date   
+    created_at: date
+    model_config = {
+        "from_attributes": True  # ✅ Replaces orm_mode=True in Pydantic v2
+    }
 
 class POC(BaseModel):
     """Represents a point of contact for a lead."""

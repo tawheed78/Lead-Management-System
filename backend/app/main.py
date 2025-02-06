@@ -1,6 +1,9 @@
+import logging
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from starlette.status import HTTP_404_NOT_FOUND, HTTP_400_BAD_REQUEST, HTTP_500_INTERNAL_SERVER_ERROR
+from prometheus_fastapi_instrumentator import Instrumentator # type: ignore
+from multiprocessing import Queue
 from .routes.leads_routes import router as lead_router
 from .routes.point_of_contact_routes import router as point_of_contact_router
 from .routes.call_tracking_routes import router as call_tracking_router
@@ -17,7 +20,6 @@ from app.exceptions.exception_handler import (
 
 
 app = FastAPI()
-
 
 app.add_middleware(
     CORSMiddleware,
@@ -40,6 +42,9 @@ app.include_router(call_tracking_router, prefix="/api", tags=["Call Tracking Ope
 app.include_router(interaction_tracking_router, prefix="/api", tags=["Interaction Tracking Operations"])
 app.include_router(performance_tracking_router, prefix="/api/performance", tags=["Performance Tracking Operations"])
 
+# Initialize Prometheus monitoring
+instrumentator = Instrumentator().instrument(app)
+instrumentator.expose(app, endpoint="/metrics")
 
 @app.get("/")
 async def root():

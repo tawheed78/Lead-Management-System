@@ -70,7 +70,7 @@ async def get_interactions(
     ):
     """Route to retrieve all interactions for a specific lead."""
     try:
-        interactions = await collection.find({"lead_id": lead_id}).to_list(length=1000)
+        interactions = await collection.find({"lead_id": lead_id}).sort([('interaction_date',-1),('interaction_time',-1)]).to_list(length=1000)
         return interactions
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"An error occurred: {e}") from e
@@ -83,7 +83,7 @@ async def get_all_interactions(
     ):
     """Route to retrieve all interactions."""
     try:
-        interactions = await collection.find({}).to_list(length=1000)
+        interactions = await collection.find({}).sort([('interaction_date',-1),('interaction_time',-1)]).to_list(length=1000)
         lead_ids = [interaction['lead_id'] for interaction in interactions]
         leads = db.query(LeadModel).filter(LeadModel.id.in_(lead_ids)).all()
         lead_dict = {lead.id: lead.name for lead in leads}

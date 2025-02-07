@@ -29,7 +29,8 @@ router = APIRouter()
 async def add_interaction(
     lead_id: int, 
     interaction: NewInteraction, 
-    db: Session = Depends(get_postgres_db), 
+    db: Session = Depends(get_postgres_db),
+    redis: aioredis.Redis = Depends(get_redis_client),
     permissions: bool = has_permission(["sales", "admin"])
     ):
     """Route to add an interaction to a lead."""
@@ -57,6 +58,8 @@ async def add_interaction(
         await collection.insert_one(interaction)
         interaction['id'] = str(interaction["_id"])
         interaction["lead_name"] = db_lead.name
+        cached_keys = ["interactions-all", "well-performing", "under-performing"]
+        [await redis.delete(key) for key in cached_keys]
         return interaction
     except SQLAlchemyError as e:
         db.rollback()
@@ -79,7 +82,7 @@ async def get_interactions(
         if interactions_data_cache:
             return json.loads(interactions_data_cache)
         interactions = await collection.find({"lead_id": lead_id}).sort([('interaction_date',-1),('interaction_time',-1)]).to_list(length=1000)
-        await redis.set(cached_key, json.dumps(interactions, default=json_serializer), ex=3600)
+        await redis.set(cached_key, json.dumps(interactions, default=json_serializer), ex=180)
         return interactions
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"An error occurred: {e}") from e
@@ -106,7 +109,7 @@ async def get_all_interactions(
             interaction['id'] = str(interaction["_id"])
             interaction["lead_name"] = lead_dict.get(interaction["lead_id"], "Unknown")
             result.append(interaction)
-        await redis.set(cached_key, json.dumps(result, default=json_serializer), ex=3600)
+        await redis.set(cached_key, json.dumps(result, default=json_serializer), ex=180)
         return result
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"An error occurred: {e}") from e
@@ -136,7 +139,7 @@ async def update_interaction(
             else:
                 updated_interaction["lead_name"] = "Unknown Lead"
             updated_interaction["id"] = str(updated_interaction["_id"])
-            cached_keys = ["interactions-all", f"interactions-{lead_id}"]
+            cached_keys = ["interactions-all", f"interactions-{lead_id}", "well-performing", "under-performing"]
             [await redis.delete(key) for key in cached_keys]
             return updated_interaction
         raise HTTPException(status_code=404, detail="Interaction not found")
@@ -154,8 +157,8 @@ async def delete_interaction(
     try:
         result = await collection.delete_one({"_id": ObjectId(interaction_id)})
         if result.deleted_count == 1:
-            cached_key = "interactions-all"
-            await redis.delete(cached_key)
+            cached_keys = ["interactions-all", "well-performing", "under-performing"]
+            [await redis.delete(key) for key in cached_keys]
             return {"status": "success", "message": "Interaction deleted"}
         raise HTTPException(status_code=404, detail="Interaction not found")
     except Exception as e:

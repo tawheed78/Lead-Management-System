@@ -9,6 +9,15 @@ services:
       - loki
     networks:
       - monitoring
+  
+  redis:
+    image: redis
+    ports:
+      - "6379:6379"
+    depends_on:
+      - fastapi
+    networks:
+      - monitoring
 
   prometheus:
     image: prom/prometheus

@@ -46,7 +46,6 @@ def add_call_to_lead(lead_id: int, call: CallCreate, db: Session):
             "poc_name": db_poc.name,    # Include poc_name
             "poc_contact": db_poc.phone_number  # Include poc_contact
         }
-        print(response)
         return response
     except SQLAlchemyError as e:
         db.rollback()

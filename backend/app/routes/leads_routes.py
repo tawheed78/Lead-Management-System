@@ -30,8 +30,8 @@ async def create_lead(
     try:
         return create_new_lead(lead, db)
         
-    except SQLAlchemyError as e:
-        raise HTTPException(status_code=500, detail=f"Database error: {e}") from e
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Unexpected error: {e}") from e
 
 
 @router.get('/', response_model=List[LeadResponse])
@@ -54,8 +54,8 @@ async def get_all_leads(
         await redis.set(cache_key, json.dumps(leads_data, default=json_serializer), ex=300)
         return leads_data
 
-    except SQLAlchemyError as e:
-        raise HTTPException(status_code=500, detail=f"Database error: {e}") from e
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Unexpected error: {e}") from e
 
 
 @router.get('/{lead_id}', response_model=Lead)
@@ -67,8 +67,8 @@ async def get_lead(
     """Route to retrieve a lead by its ID."""
     try:
         return get_lead_by_id(lead_id, db)
-    except SQLAlchemyError as e:
-        raise HTTPException(status_code=500, detail=f"Database error: {e}") from e
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Unexpected error: {e}") from e
 
 
 @router.put('/{lead_id}', response_model=LeadResponse)
@@ -84,8 +84,8 @@ async def update_lead(
         cached_key = "leads-all"
         await redis.delete(cached_key)
         return update_lead_by_id(lead_id, lead, db)
-    except SQLAlchemyError as e:
-        raise HTTPException(status_code=500, detail=f"Database error: {e}") from e
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Unexpected error: {e}") from e
 
 
 @router.delete('/{lead_id}')
@@ -100,5 +100,5 @@ async def delete_lead(
         cached_key = "leads-all"
         await redis.delete(cached_key)
         return delete_lead_by_id(lead_id, db)
-    except SQLAlchemyError as e:
-        raise HTTPException(status_code=500, detail=f"Database error: {e}") from e
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Unexpected error: {e}") from e

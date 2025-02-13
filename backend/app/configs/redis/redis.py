@@ -7,7 +7,7 @@ import redis.asyncio as aioredis # type: ignore
 
 load_dotenv()
 
-host = 'redis://localhost:6379'
+host = os.getenv('REDIS_HOST_DOCKER')
 
 "Create Redis connection pool"
 redis_client = aioredis.from_url(

@@ -50,6 +50,7 @@ export const fetchCalls = async (token: string) => {
     headers: {
       Authorization: `Bearer ${token}`,
     },
+  
   })
   if (!response.ok) {
     throw new Error('Failed to fetch calls')

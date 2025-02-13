@@ -1,0 +1,42 @@
+services:
+  - name: fastapi-app
+    type: web
+    env: docker
+    repo: https://github.com/tawheed78/Lead-Management-System
+    plan: free
+    envVars:
+      - key: REDIS_URL
+        value: https://redis-service.onrender.com
+      - key: PROMETHEUS_URL
+        value: https://prometheus-service.onrender.com
+      - key: LOKI_URL
+        value: https://loki-service.onrender.com
+    autoDeploy: true
+
+  - name: redis-service
+    type: web  # Running Redis as a web service using Docker
+    env: docker
+    repo: https://github.com/tawheed78/Lead-Management-System
+    dockerCommand: |
+      docker run -p 6379:6379 redis
+
+  - name: prometheus-service
+    type: web
+    env: docker
+    repo: https://github.com/tawheed78/Lead-Management-System
+    dockerCommand: |
+      docker run -p 9090:9090 -v /app/prometheus.yml:/etc/prometheus/prometheus.yml prom/prometheus
+
+  - name: loki-service
+    type: web
+    env: docker
+    repo: https://github.com/tawheed78/Lead-Management-System
+    dockerCommand: |
+      docker run -p 3100:3100 grafana/loki:latest
+
+  - name: grafana-service
+    type: web
+    env: docker
+    repo: https://github.com/tawheed78/Lead-Management-System
+    dockerCommand: |
+      docker run -p 3000:3000 -e GF_SECURITY_ADMIN_PASSWORD=admin grafana/grafana

@@ -5,9 +5,10 @@ import os
 from dotenv import load_dotenv
 import redis.asyncio as aioredis # type: ignore
 
-load_dotenv()
+load_dotenv(dotenv_path="app/.env")
 
-host = os.getenv('REDIS_HOST_DOCKER')
+# host = os.getenv('REDIS_HOST')
+host = 'redis://localhost:6380'
 
 "Create Redis connection pool"
 redis_client = aioredis.from_url(

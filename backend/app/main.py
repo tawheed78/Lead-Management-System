@@ -44,7 +44,7 @@ app.include_router(performance_tracking_router, prefix="/api/performance", tags=
 
 # Initialize Prometheus monitoring
 instrumentator = Instrumentator().instrument(app)
-instrumentator.expose(app, endpoint="/metrics")
+instrumentator.expose(app, endpoint="https://prometheus-lw7q.onrender.com/metrics")
 
 @app.get("/")
 async def root():

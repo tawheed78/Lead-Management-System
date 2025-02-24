@@ -47,7 +47,6 @@ async def get_all_leads(
         cache_key = "leads-all"
         leads_data = await redis.get(cache_key)
         if leads_data:
-            print('hi')
             return json.loads(leads_data)
         leads =  db.query(LeadModel).offset(skip).limit(limit).all()
         leads_data = [LeadResponse.model_validate(lead).model_dump() for lead in leads]

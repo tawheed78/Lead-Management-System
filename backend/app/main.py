@@ -23,7 +23,7 @@ app = FastAPI()
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
+    allow_origins=["https://lead-management-system-mu.vercel.app"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"]
@@ -44,7 +44,7 @@ app.include_router(performance_tracking_router, prefix="/api/performance", tags=
 
 # Initialize Prometheus monitoring
 instrumentator = Instrumentator().instrument(app)
-instrumentator.expose(app, endpoint="https://prometheus-lw7q.onrender.com/metrics")
+instrumentator.expose(app, endpoint="https://lead-management-prometheus-service.onrender.com/metrics")
 
 @app.get("/")
 async def root():

@@ -24,10 +24,13 @@ async def add_call(
     lead_id: int,
     call: CallCreate,
     db: Session = Depends(get_postgres_db),
+    redis: aioredis.Redis = Depends(get_redis_client),
     permissions: bool = has_permission(["sales", "admin"])
     ):
     """Route to add a call to a lead."""
     try:
+        cached_keys = ["calls-all", "calls-today"]
+        [await redis.delete(key) for key in cached_keys]
         return add_call_to_lead(lead_id, call, db)
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Unexpected error: {e}") from e

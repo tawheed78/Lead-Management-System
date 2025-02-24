@@ -1,6 +1,6 @@
 const config = {
     // BASE_URL: 'https://lead-management-app-backend.onrender.com/api',
-    BASE_URL: 'https://lead-management-app-backend-v2.onrender.com'
+    BASE_URL: 'https://lead-management-app-backend-v2.onrender.com/api'
     // BASE_URL: 'http://127.0.0.1:8000/api',
   };
   
